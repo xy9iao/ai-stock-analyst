@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ai-stock-analyst-postgres
+    environment:
+      POSTGRES_USER: ai_stock_analyst
+      POSTGRES_PASSWORD: ai_stock_analyst_password
+      POSTGRES_DB: ai_stock_analyst
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_stock_analyst -d ai_stock_analyst"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: ai-stock-analyst-backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://ai_stock_analyst:ai_stock_analyst_password@postgres:5432/ai_stock_analyst
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: ai-stock-analyst-frontend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
