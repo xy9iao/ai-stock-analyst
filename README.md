@@ -1,14 +1,18 @@
 # AI Stock Analyst
 
-AI Stock Analyst is a local-first AI-powered stock research assistant. Version 0 begins with a professional full-stack foundation: a Next.js frontend, a FastAPI backend, a PostgreSQL database, Docker Compose for local development, and basic CI checks.
+AI Stock Analyst is a local-first AI-powered stock research assistant. Version 0 starts with a professional full-stack foundation and grows toward holdings, watchlist, market data, AI reports, and chat in later phases.
 
 This project is for investment research and decision support only. It is not a trading bot, brokerage app, real-money execution system, or guaranteed financial advice tool.
 
 ## Current Status
 
-Phase 1 is the only active phase.
+Phase 1 is complete.
 
-Completed:
+Current active phase: **Phase 2: Backend and Database Foundation**.
+
+Phase 2 focuses on backend structure, typed configuration, PostgreSQL connectivity, SQLAlchemy models, Alembic migrations, core error handling, logging, tests, and documentation. It does not implement Holdings/Watchlist CRUD yet.
+
+Completed in Phase 1:
 
 - FastAPI backend health endpoint
 - Next.js dashboard
@@ -16,13 +20,22 @@ Completed:
 - PostgreSQL Docker service
 - Docker Compose local stack
 - Alembic migration foundation
+- README, development workflow docs, and `AGENTS.md`
+- Basic GitHub Actions CI
+
+Current Phase 2 planning docs:
+
+- [Phase 2 Plan](docs/phase-2-plan.md)
+- [Backend Guide](docs/backend.md)
+- [Database Guide](docs/database.md)
+- [Development Workflow](docs/development-workflow.md)
 
 Not started yet:
 
 - Holdings CRUD
 - Watchlist CRUD
-- Market data
-- News data
+- Market data integration
+- News integration
 - AI reports
 - Chat
 
@@ -112,10 +125,11 @@ uv run ruff check .
 uv run ruff format .
 ```
 
-Alembic migration commands for future database changes:
+Alembic migration commands:
 
 ```bash
 uv run alembic upgrade head
+uv run alembic downgrade -1
 uv run alembic revision --autogenerate -m "describe change"
 ```
 
@@ -141,6 +155,10 @@ Important variables:
 - `POSTGRES_PASSWORD`
 - `POSTGRES_DB`
 - `DATABASE_URL`
+- `BACKEND_CORS_ORIGINS`
+- `LLM_BASE_URL`
+- `LLM_API_KEY`
+- `LLM_MODEL`
 - `NEXT_PUBLIC_API_BASE_URL`
 
 In Docker Compose, the frontend uses `http://backend:8000` to reach the backend container. In local browser development, use `http://localhost:8000`.
@@ -156,19 +174,19 @@ git commit -m "Short description of change"
 git push
 ```
 
-For future feature work, create a branch from `main`:
+For Phase 2 feature work, create a branch from `main`:
 
 ```bash
 git checkout main
 git pull
-git checkout -b feature/holdings-crud
+git checkout -b phase-2/backend-database-foundation
 ```
 
-When the feature is ready, push the branch and open a pull request on GitHub.
+When the work is ready, push the branch and open a pull request on GitHub.
 
 ## CI
 
-GitHub Actions will run basic checks when code is pushed or a pull request is opened:
+GitHub Actions runs basic checks when code is pushed or a pull request is opened:
 
 - backend dependency install
 - backend Ruff lint

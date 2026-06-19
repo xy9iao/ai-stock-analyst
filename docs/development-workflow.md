@@ -1,6 +1,18 @@
 # Development Workflow
 
-This document explains the basic professional workflow for AI Stock Analyst.
+This document explains the professional workflow for AI Stock Analyst in beginner-friendly terms.
+
+## Current Phase
+
+Phase 1 is complete. The active phase is **Phase 2: Backend and Database Foundation**.
+
+Phase 2 does not build Holdings/Watchlist CRUD yet. It prepares the backend and database so those features can be added safely in the next phase.
+
+Use these docs during Phase 2:
+
+- [Phase 2 Plan](phase-2-plan.md)
+- [Backend Guide](backend.md)
+- [Database Guide](database.md)
 
 ## Git and GitHub
 
@@ -17,17 +29,19 @@ git commit -m "Describe the change"
 git push
 ```
 
-## Main Branch
+## Branches
 
 `main` is the stable branch. Code on `main` should work.
 
-For future features, create a separate branch:
+For Phase 2 work, create a separate branch:
 
 ```bash
 git checkout main
 git pull
-git checkout -b feature/short-feature-name
+git checkout -b phase-2/backend-database-foundation
 ```
+
+This keeps unfinished backend/database work separate from the stable `main` branch.
 
 ## Commits
 
@@ -36,9 +50,10 @@ A commit is a saved checkpoint.
 Good commits are small and focused. Examples:
 
 ```txt
-Add backend health endpoint
-Add Docker Compose local stack
-Add frontend dashboard health check
+Refine backend settings
+Add database session dependency
+Add initial database models
+Add first Alembic migration
 ```
 
 ## Pull Requests
@@ -140,6 +155,20 @@ docker compose up --build
 
 Stop the stack with `Ctrl+C`.
 
+## .env and .env.example
+
+`.env.example` is committed to Git and documents required environment variables.
+
+`.env` is local only and should never be committed. It can contain real local secrets or local overrides.
+
+Create `.env` from the example:
+
+```bash
+cp .env.example .env
+```
+
+Phase 2 should keep `.env.example` updated whenever new backend settings are introduced.
+
 ## PostgreSQL
 
 PostgreSQL is the application database.
@@ -152,11 +181,21 @@ localhost:5432
 
 The backend uses `DATABASE_URL` to connect to it.
 
+The frontend must not connect directly to PostgreSQL. All database access goes through FastAPI.
+
+## SQLAlchemy
+
+SQLAlchemy is the Python ORM used by the backend.
+
+An ORM maps Python classes to database tables. In Phase 2, SQLAlchemy models define the first table shapes. Business features and CRUD routes come later.
+
+This project uses SQLAlchemy 2.x sync style for v0.
+
 ## Alembic
 
 Alembic manages database schema migrations.
 
-A migration is a versioned database change. Phase 1 only adds the Alembic foundation. Real table migrations come later.
+A migration is a versioned database change. It lets the database evolve in a controlled way as models change.
 
 Run migrations:
 
@@ -165,11 +204,29 @@ cd backend
 uv run alembic upgrade head
 ```
 
+Undo the latest migration:
+
+```bash
+uv run alembic downgrade -1
+```
+
 Create a migration after adding models:
 
 ```bash
 uv run alembic revision --autogenerate -m "describe change"
 ```
+
+## Backend Error Handling
+
+Backend error handling gives the API a consistent way to return errors.
+
+Phase 2 should add a simple shared error structure so future modules can raise predictable application errors without leaking secrets or raw stack traces to normal API clients.
+
+## Backend Logging
+
+Logging records useful backend events during local development.
+
+Phase 2 should add a basic logging setup so startup, configuration, database, and API issues are easier to diagnose.
 
 ## pytest
 
@@ -200,7 +257,7 @@ CI means continuous integration.
 
 In this project, GitHub Actions automatically checks code after a push or pull request.
 
-Phase 1 CI checks:
+Current CI checks:
 
 - backend dependencies install
 - backend Ruff lint

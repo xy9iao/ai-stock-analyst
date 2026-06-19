@@ -15,9 +15,11 @@ It is not:
 
 ## Current Phase Rule
 
-Phase 1 is repository and development environment setup only.
+Current active phase: **Phase 2: Backend and Database Foundation**.
 
-Do not implement Holdings, Watchlist, market data, news, AI reports, chat, authentication, deployment automation, or production infrastructure unless the user explicitly starts a later phase.
+Phase 1 is complete. Phase 2 prepares backend structure, configuration, PostgreSQL connectivity, SQLAlchemy models, Alembic migrations, error handling, logging, tests, and documentation.
+
+Do not implement Holdings CRUD, Watchlist CRUD, market data integration, news integration, AI reports, chat, authentication, deployment automation, or production infrastructure until Phase 2 acceptance criteria are complete and the user explicitly starts a later phase.
 
 ## Architecture Boundaries
 
@@ -30,6 +32,7 @@ Frontend:
 - shadcn/ui-style local components
 - lucide-react
 - Calls backend APIs only through `frontend/lib/api/`
+- Must not call the database, LLM APIs, market data APIs, or news APIs directly
 
 Backend:
 
@@ -42,6 +45,7 @@ Backend:
 - psycopg 3
 - pytest
 - Ruff
+- Owns database access, external API access, AI integration, reports, chat logic, and secrets
 
 Database:
 
@@ -53,6 +57,19 @@ Infrastructure:
 
 - Docker Compose runs frontend, backend, and PostgreSQL locally
 - GitHub Actions handles basic CI checks
+- No deployment automation in Phase 2
+
+## Phase 2 Implementation Order
+
+1. Review backend structure and commands.
+2. Refine typed settings in `backend/app/core/config.py`.
+3. Refine sync SQLAlchemy engine/session setup in `backend/app/core/database.py`.
+4. Configure Alembic to use shared settings and model metadata.
+5. Add initial SQLAlchemy models for planned v0 tables.
+6. Generate and apply the first migration.
+7. Add core error handling and basic logging.
+8. Add backend tests for health/config/database behavior where useful.
+9. Keep README and docs updated.
 
 ## Commands
 
@@ -65,6 +82,8 @@ uv run uvicorn app.main:app --reload
 uv run pytest
 uv run ruff check .
 uv run ruff format .
+uv run alembic upgrade head
+uv run alembic revision --autogenerate -m "describe change"
 ```
 
 Frontend:
@@ -99,6 +118,7 @@ git push
 - Keep backend modules under `backend/app/modules/`.
 - Use service/repository boundaries when business features are added later.
 - Use sync SQLAlchemy for v0.
+- Use Alembic for database schema changes.
 - Do not commit real `.env` secrets.
 - Do not commit generated caches such as `.venv`, `node_modules`, `.next`, or `*.tsbuildinfo`.
 - Add focused tests for backend behavior.
