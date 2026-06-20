@@ -1,16 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.config import settings
+from app.core.errors import add_error_handlers
+from app.core.logging import configure_logging
 from app.modules.health.router import router as health_router
 
-app = FastAPI(title="AI Stock Analyst Backend")
+configure_logging()
+app = FastAPI(title=settings.app_name)
+add_error_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=settings.backend_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
