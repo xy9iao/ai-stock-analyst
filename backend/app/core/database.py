@@ -21,6 +21,7 @@ def get_db() -> Generator[Session, None, None]:
     finally:
         db.close()
 
+
 def check_database_connection() -> bool:
     with engine.connect() as connection:
         result = connection.execute(text("select 1"))

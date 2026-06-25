@@ -44,6 +44,10 @@ uv run alembic upgrade head
 uv run alembic downgrade -1
 ```
 
+## Phase 3 Note: No Schema Change
+
+Phase 3 (Holdings/Watchlist CRUD) added **no migration**. The `holdings` and `watchlist_items` tables were created by the Phase 2 initial migration and were not altered — Phase 3 only added the API layers (`schemas` / `repository` / `service` / `router`) on top of the existing models. A new Alembic migration is only needed when a model's columns actually change.
+
 ## Phase 2 Initial Tables
 
 Phase 2 should create initial table models and a first migration, but it should not add API CRUD behavior yet.

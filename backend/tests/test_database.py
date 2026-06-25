@@ -15,6 +15,7 @@ def test_get_db_yields_sqlalchemy_session() -> None:
         except StopIteration:
             pass
 
+
 def test_check_database_connection(monkeypatch) -> None:
     class FakeResult:
         def scalar_one(self) -> int:

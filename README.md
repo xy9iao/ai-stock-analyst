@@ -6,34 +6,35 @@ This project is for investment research and decision support only. It is not a t
 
 ## Current Status
 
-Phase 1 is complete.
+Phases 0–2 are complete.
 
-Current active phase: **Phase 2: Backend and Database Foundation**.
+Current active phase: **Phase 3: Holdings and Watchlist CRUD**.
 
-Phase 2 focuses on backend structure, typed configuration, PostgreSQL connectivity, SQLAlchemy models, Alembic migrations, core error handling, logging, tests, and documentation. It does not implement Holdings/Watchlist CRUD yet.
+Phase 3 builds the first real product features on the Phase 2 foundation: manual CRUD for Holdings and Watchlist items, end to end (backend `router → service → repository` + Pydantic schemas, plus frontend pages). It does not implement market data or AI yet. See [Roadmap & Progress](docs/roadmap.md) for the detailed current-phase scope.
 
-Completed in Phase 1:
+Completed in Phases 0–2:
 
-- FastAPI backend health endpoint
-- Next.js dashboard
-- Frontend-to-backend health check
-- PostgreSQL Docker service
-- Docker Compose local stack
-- Alembic migration foundation
-- README, development workflow docs, and `AGENTS.md`
+- Planning and design (charter, vision, requirements, architecture, AI design, decisions)
+- FastAPI backend health endpoint and Next.js dashboard health check
+- PostgreSQL Docker service and Docker Compose local stack
+- Typed `pydantic-settings` config, SQLAlchemy 2.x models, Alembic migrations (8 initial tables)
+- Core error handling, logging, and backend tests
 - Basic GitHub Actions CI
 
-Current Phase 2 planning docs:
+Project docs:
 
-- [Phase 2 Plan](docs/phase-2-plan.md)
-- [Backend Guide](docs/backend.md)
-- [Database Guide](docs/database.md)
-- [Development Workflow](docs/development-workflow.md)
+- [Roadmap & Progress](docs/roadmap.md)
+- [Backend Guide](docs/guides/backend.md)
+- [Database Guide](docs/guides/database.md)
+- [Development Workflow](docs/guides/development-workflow.md)
 
-Not started yet:
+In progress:
 
 - Holdings CRUD
 - Watchlist CRUD
+
+Not started yet:
+
 - Market data integration
 - News integration
 - AI reports
