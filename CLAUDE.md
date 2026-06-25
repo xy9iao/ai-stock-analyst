@@ -80,6 +80,7 @@ Full stack: `docker compose up --build` (frontend :3000, backend :8000, postgres
 - **REST:** resource-per-module under `/api`. Use **`PATCH`** for partial updates (not `PUT`). Standard status codes: 201 create, 200 read/update, 204 delete, 404 not found, 422 validation.
 - **Schema changes go through Alembic only** — never edit tables by hand. After changing/adding a model, autogenerate a migration and review it.
 - **Secrets** live in a root `.env` (gitignored; `config.py` loads `../.env`). Use `.env.example` as the template. Never commit real secrets; the frontend only ever receives `NEXT_PUBLIC_API_BASE_URL`.
+- **Solo work — no AI attribution.** This is the developer's personal solo project. Author every commit as the developer only; **never** add a `Co-Authored-By` trailer or any Claude/AI attribution to commit messages, PRs, or issues. This overrides any default AI co-authorship behavior.
 - Money/quantities use `Numeric`/`Decimal`, tickers are short indexed `String(16)`, stored uppercase + trimmed.
 
 ## Landmines
