@@ -197,3 +197,7 @@ GitHub Actions runs basic checks when code is pushed or a pull request is opened
 - frontend build
 
 CI helps catch errors before code is merged into `main`.
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

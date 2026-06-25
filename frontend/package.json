@@ -1,6 +1,7 @@
 {
   "name": "ai-stock-analyst-frontend",
   "version": "0.1.0",
+  "license": "MIT",
   "private": true,
   "packageManager": "pnpm@11.6.0",
   "scripts": {

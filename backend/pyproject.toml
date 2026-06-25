@@ -2,6 +2,7 @@
 name = "ai-stock-analyst-backend"
 version = "0.1.0"
 description = "FastAPI backend for AI Stock Analyst"
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.13.0",
