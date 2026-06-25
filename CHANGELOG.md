@@ -2,13 +2,11 @@
 
 Build history by phase. The active phase and its detailed scope live in `docs/roadmap.md`; this file is the frozen record of what was completed. Per the Per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
 
-## Phase 3 — Holdings and Watchlist CRUD (in progress)
+## Phase 3 — Holdings and Watchlist CRUD (done 2026-06-25)
 
-_To be completed when Phase 3 lands, per the Per-phase handoff rules in `CLAUDE.md` (file manifest, key decisions)._
-
-- Built: _pending_
-- Files: _pending_
-- Key decisions: _pending_
+- Built: full manual CRUD for **Holdings** and **Watchlist**, end to end. Backend `router → service → repository` modules + Pydantic v2 `schemas` for both (Create/Update/Read split, ticker trim+uppercase normalization, `shares > 0` / `average_cost >= 0` / `target_allocation` 0–1 validation), service-layer not-found → `AppError(404)`, both routers registered in `app/main.py`. SQLite-backed test suite (20 tests: CRUD + 404 + 422 per module) via a `get_db` dependency override. Frontend: a shared `apiFetch` helper, typed `holdings`/`watchlist` API clients, and `/holdings` + `/watchlist` pages with create/edit/delete and loading/error/empty states, plus dashboard nav links.
+- Files: `backend/app/modules/holdings/{__init__,schemas,repository,service,router}.py`, `backend/app/modules/watchlist/{__init__,schemas,repository,service,router}.py`, `backend/app/main.py` (router registration), `backend/tests/{conftest,test_holdings,test_watchlist}.py`; `frontend/lib/api/{client,holdings,watchlist}.ts`, `frontend/app/holdings/page.tsx`, `frontend/app/watchlist/page.tsx`, `frontend/app/page.tsx` (nav); docs (`docs/guides/{backend,database,api}.md`).
+- Key decisions: partial updates use **`PATCH`** (not `PUT`); `target_allocation` stored as a **fraction (0–1)** to match computed allocation; **SQLite in-memory** test DB (no Docker in CI) via `get_db` override; **no new migration** — the `holdings`/`watchlist_items` tables were unchanged from Phase 2; `Decimal` is serialized over the wire as a **string**, so frontend types numeric fields as `string`.
 
 ## Phase 2 — Backend and Database Foundation (done 2026-06-20)
 

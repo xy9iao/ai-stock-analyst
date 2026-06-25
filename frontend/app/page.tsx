@@ -1,4 +1,5 @@
 import { Activity, Database, LineChart } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { getBackendHealth } from "@/lib/api/client";
@@ -30,6 +31,14 @@ export default async function DashboardPage() {
               </p>
             </div>
           </div>
+          <nav className="flex gap-4 text-sm font-medium text-slate-700">
+            <Link href="/holdings" className="hover:text-emerald-700">
+              Holdings
+            </Link>
+            <Link href="/watchlist" className="hover:text-emerald-700">
+              Watchlist
+            </Link>
+          </nav>
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">

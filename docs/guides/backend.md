@@ -1,6 +1,6 @@
 # Backend Guide
 
-This guide documents the backend structure and Phase 2 direction.
+This guide documents the backend structure as implemented through Phase 3 (Holdings/Watchlist CRUD).
 
 ## Purpose
 
@@ -20,15 +20,28 @@ The frontend should call backend API routes. It should not directly call Postgre
 ```txt
 backend/
 ├── app/
-│   ├── main.py
+│   ├── main.py              # FastAPI app + router registration (health, holdings, watchlist)
 │   ├── core/
-│   │   ├── config.py
-│   │   └── database.py
+│   │   ├── config.py        # typed pydantic-settings
+│   │   ├── database.py      # engine, get_db session dependency, Base
+│   │   ├── errors.py        # AppError + global handler
+│   │   └── logging.py
+│   ├── models/              # all SQLAlchemy models (one file per table)
 │   └── modules/
-│       └── health/
-│           └── router.py
+│       ├── health/
+│       │   └── router.py
+│       ├── holdings/        # router → service → repository → schemas
+│       │   ├── router.py
+│       │   ├── service.py
+│       │   ├── repository.py
+│       │   └── schemas.py
+│       └── watchlist/       # same layering as holdings
+│           ├── router.py
+│           ├── service.py
+│           ├── repository.py
+│           └── schemas.py
 ├── alembic/
-├── tests/
+├── tests/                   # conftest.py (SQLite fixture) + test_*.py
 ├── alembic.ini
 ├── pyproject.toml
 ├── uv.lock
@@ -41,18 +54,29 @@ The backend is a modular monolith.
 
 Future business modules should live under `backend/app/modules/`.
 
-Typical future module shape:
+Each feature module has four files (see `holdings/` and `watchlist/` for the reference implementation):
 
 ```txt
-modules/example/
-├── router.py
-├── service.py
-├── repository.py
-├── models.py
-└── schemas.py
+modules/<feature>/
+├── router.py      # HTTP layer: routes, status codes, Depends(get_db)
+├── service.py     # business logic: validation, not-found -> AppError(404)
+├── repository.py  # the only layer that touches the DB Session
+└── schemas.py     # Pydantic request/response models
 ```
 
-Modules should call each other through normal Python imports and service functions, not internal network calls.
+SQLAlchemy models do **not** live in the module — all models are centralized in `backend/app/models/` (one file per table, re-exported in `models/__init__.py`). Modules call each other through normal Python imports and service functions, not internal network calls.
+
+### Layered request flow
+
+A write request flows straight down the layers and back:
+
+`router` (parse + validate body via schema) → `service` (rules, ticker normalization, 404) → `repository` (SQLAlchemy `add`/`commit`/`refresh`) → ORM row → serialized through the `*Read` schema (`from_attributes=True`).
+
+Boundary rules:
+
+- Input validation lives in `schemas.py` (Pydantic) and fails fast with `422` — bad data never reaches the service or DB.
+- "Not found" is a service decision: the repository returns `None`, the service raises `AppError(..., 404)`, and the global handler in `core/errors.py` formats the JSON.
+- Partial updates use `PATCH` with `model_dump(exclude_unset=True)` so only the fields the client sent are changed.
 
 ## Configuration
 
