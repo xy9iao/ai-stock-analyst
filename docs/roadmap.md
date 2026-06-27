@@ -122,6 +122,74 @@ Phase 3 is complete when:
 
 ## Current Phase Detail: Phase 4 — Market Data Integration
 
-**Phase 4 — Market Data Integration.** Add a backend market-data provider abstraction to fetch current price, daily change, and historical price/volume for holdings and watchlist tickers, cache responses to respect API rate limits, and surface price + percentage change and basic charts in the frontend.
+### Goal
 
-_Detailed scope (In Scope / Out of Scope / REST design / implementation steps / test matrix / acceptance criteria) will be fleshed out when Phase 4 work begins — see `docs/planning/` for design intent._
+Fetch and display real market data — current quote, daily change, historical price/volume — for holdings and watchlist tickers, behind a swappable `MarketDataProvider` abstraction, cached in the existing `market_data_cache` table to respect free-tier limits. Add a per-stock detail page with a price/volume chart, and surface market value + unrealized P/L on Holdings.
+
+### Provider Decision
+
+**yfinance** is the first concrete provider (no API key; Yahoo-sourced — accurate and complete for U.S. equities; the design doc's "prototype fallback"). Used for local development and **replaced with a keyed production API at deployment** — exactly the swap the abstraction exists for. Rationale vs alternatives: Finnhub's free tier no longer serves historical stock candles (charts would break); FMP's free tier caps ~250 req/day. yfinance has the fewest limits for the chart requirement and zero signup friction.
+
+### In Scope
+
+- New `market_data` backend module: `provider.py` (the `MarketDataProvider` interface), `providers/yfinance_provider.py` (concrete), `service.py` (cache-aware orchestration), `repository.py` (read/write `market_data_cache`), `router.py`, `schemas.py`.
+- `MarketDataProvider` interface, Phase 4 subset: `get_quote(ticker)`, `get_price_history(ticker, range)`.
+- Caching via the existing `market_data_cache` table: quotes short TTL (~2 min), history longer (~5 min intraday … ~1 day for 1y). Fresh hit returns the stored payload; miss/stale fetches + upserts.
+- REST endpoints (see table); register the router in `app/main.py`.
+- Frontend: `lib/api/market.ts` client; price + daily % change (green/red) on Holdings/Watchlist tables; **market value + unrealized gain/loss %** on Holdings (shares × price vs `average_cost`); a new `/stocks/[ticker]` detail page with a price/volume chart + range toggle (1D/1W/1M/1Y).
+- Tests: provider **mocked** (no live calls in CI), service cache hit/miss + TTL, bad range → 422, unknown ticker → 404, P/L math.
+
+### Out of Scope
+
+- News, earnings/financial snapshots (Phase 5); AI reports/chat (Phase 6+).
+- Index data (S&P 500 / Nasdaq) — deferred until the dashboard needs market context.
+- Technical indicators, real-time streaming, options/crypto/forex.
+- Swapping to a paid/official provider — that happens at deployment.
+
+### REST API Design
+
+| Method | Path | Purpose | Success / Errors |
+|--------|------|---------|------------------|
+| GET | `/api/market/quote/{ticker}` | current quote (price, change, %change, prev close, high/low, volume) | 200 / 404 |
+| GET | `/api/market/history/{ticker}?range=1d\|1w\|1m\|1y` | OHLCV series for charts | 200 / 404 / 422 |
+
+A batch `GET /api/market/quotes?tickers=A,B,C` may be added in step 6 if the tables need it.
+
+### Provider Abstraction & Caching
+
+- `MarketDataProvider` is a `typing.Protocol` in `provider.py`; `service.py` depends on the Protocol, not yfinance, so a future `FinnhubProvider`/`FmpProvider` is a drop-in. Active provider chosen via config (`MARKET_DATA_PROVIDER`, default `yfinance`). Providers return normalized `schemas`, never raw API payloads.
+- Cache key = `f"{provider}:{kind}:{ticker}:{range}"`. On read: `expires_at > now()` → return `payload`; else fetch → normalize → upsert with new `expires_at`. TTLs revisited after live testing.
+
+### Implementation Steps
+
+1. Add `yfinance` to backend deps; add `MARKET_DATA_PROVIDER` setting (default `yfinance`).
+2. `provider.py` (`MarketDataProvider` Protocol) + `schemas.py` (`Quote`, `Candle`, `PriceHistory`).
+3. `providers/yfinance_provider.py` — implement `get_quote` + `get_price_history`, normalize to schemas, unknown ticker → `AppError(404)`.
+4. `repository.py` — cache read/upsert against `market_data_cache`.
+5. `service.py` — cache-aware `get_quote`/`get_price_history` + range validation.
+6. `router.py` — the two endpoints; register in `app/main.py`.
+7. Backend tests with a mocked provider (cache hit/miss, TTL, 404, 422).
+8. Frontend `lib/api/market.ts`; price + % change + P/L on Holdings/Watchlist; `/stocks/[ticker]` page + chart (range toggle). Chart lib chosen here (default: `recharts`; there is an existing `components/charts/StockPriceChart.tsx` stub to build on).
+9. Docs + checks: update `docs/guides/api.md` (+ `backend.md`); `ruff`, `pytest`, `pnpm typecheck`, `pnpm build`; append `CHANGELOG.md`.
+
+### Test Matrix
+
+- `get_quote`: cache miss fetches + stores (200); cache hit returns stored payload without re-fetching; unknown ticker → 404.
+- `get_price_history`: valid range → 200 series; bad range → 422; unknown ticker → 404; TTL respected.
+- Holdings P/L: value = shares × price; gain/loss % vs `average_cost` correct (incl. zero-cost edge).
+
+### Resolved Decisions
+
+- **Provider:** yfinance first (swappable behind `MarketDataProvider`; replaced at deployment).
+- **Chart placement:** new `/stocks/[ticker]` detail page.
+- **Holdings P/L:** yes — market value + unrealized gain/loss on the Holdings table.
+- **Indexes:** deferred out of Phase 4.
+
+### Acceptance Criteria
+
+- Holdings & Watchlist show current price + daily % change; Holdings also show market value + unrealized P/L.
+- `/stocks/[ticker]` shows a price/volume chart with a working 1D/1W/1M/1Y toggle.
+- Market data is cached in `market_data_cache`; repeated loads don't re-hit the provider within TTL.
+- Provider sits behind `MarketDataProvider`; swapping providers needs no change to service/router.
+- Backend tests pass with the provider mocked (no network in CI); `ruff` clean; frontend `typecheck` + `build` pass.
+- No news/AI/index scope crept in.
