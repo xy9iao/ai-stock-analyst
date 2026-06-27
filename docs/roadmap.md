@@ -4,18 +4,18 @@ Single source of truth for project progress and the **current phase's** detailed
 
 ## Current Status
 
-- **Active Phase: Phase 3 — Holdings/Watchlist CRUD**
-- **Completed: Phase 0, Phase 1, Phase 2**
+- **Active Phase: Phase 4 — Market Data Integration**
+- **Completed: Phase 0, Phase 1, Phase 2, Phase 3**
 
-Phase 3 builds the first real product features on the Phase 2 foundation: manual CRUD for **Holdings** and **Watchlist** items, end to end (backend module layers + frontend pages). No market data, prices, or AI yet — just trustworthy manual data management persisted in PostgreSQL.
+Phase 3 (Holdings/Watchlist CRUD) is complete and merged to `main` (PR #3). Phase 4 adds market data: a backend provider abstraction to fetch current price, daily change, and price history for holdings/watchlist tickers, cached to respect API rate limits, then surfaced as prices + basic charts in the frontend.
 
 ## Phase Overview
 
 - [x] **Phase 0 — Planning and Design**
 - [x] **Phase 1 — Repository and Development Environment Setup**
 - [x] **Phase 2 — Backend and Database Foundation**
-- [ ] **Phase 3 — Holdings and Watchlist CRUD**  ← current
-- [ ] **Phase 4 — Market Data Integration**
+- [x] **Phase 3 — Holdings and Watchlist CRUD**
+- [ ] **Phase 4 — Market Data Integration**  ← current
 - [ ] **Phase 5 — News and Financial Data Integration**
 - [ ] **Phase 6 — AI Report Generation**
 - [ ] **Phase 7 — Chat Module**
@@ -25,7 +25,7 @@ Phase 3 builds the first real product features on the Phase 2 foundation: manual
 - [ ] **Phase 11 — README and Public Repo Documentation**
 - [ ] **Phase 12 — Future Deployment Preparation**
 
-## Current Phase Detail: Phase 3 — Holdings and Watchlist CRUD
+## Phase 3 Detail (completed — merged in PR #3, 2026-06-25)
 
 ### Goal
 
@@ -120,6 +120,8 @@ Phase 3 is complete when:
 - CI remains green.
 - Phase 3 stays focused on manual management — no market data or AI features.
 
-## Next Phase Preview: Phase 4
+## Current Phase Detail: Phase 4 — Market Data Integration
 
 **Phase 4 — Market Data Integration.** Add a backend market-data provider abstraction to fetch current price, daily change, and historical price/volume for holdings and watchlist tickers, cache responses to respect API rate limits, and surface price + percentage change and basic charts in the frontend.
+
+_Detailed scope (In Scope / Out of Scope / REST design / implementation steps / test matrix / acceptance criteria) will be fleshed out when Phase 4 work begins — see `docs/planning/` for design intent._
