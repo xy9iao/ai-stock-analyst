@@ -20,7 +20,7 @@ The frontend should call backend API routes. It should not directly call Postgre
 ```txt
 backend/
 ├── app/
-│   ├── main.py              # FastAPI app + router registration (health, holdings, watchlist)
+│   ├── main.py              # FastAPI app + router registration (health, holdings, watchlist, market)
 │   ├── core/
 │   │   ├── config.py        # typed pydantic-settings
 │   │   ├── database.py      # engine, get_db session dependency, Base
@@ -35,10 +35,17 @@ backend/
 │       │   ├── service.py
 │       │   ├── repository.py
 │       │   └── schemas.py
-│       └── watchlist/       # same layering as holdings
+│       ├── watchlist/       # same layering as holdings
+│       │   ├── router.py
+│       │   ├── service.py
+│       │   ├── repository.py
+│       │   └── schemas.py
+│       └── market_data/     # provider abstraction + cache-aside (Phase 4)
+│           ├── provider.py        # MarketDataProvider Protocol
+│           ├── providers/         # concrete providers (yfinance_provider.py)
+│           ├── repository.py      # market_data_cache read/write
+│           ├── service.py         # cache-aside orchestration
 │           ├── router.py
-│           ├── service.py
-│           ├── repository.py
 │           └── schemas.py
 ├── alembic/
 ├── tests/                   # conftest.py (SQLite fixture) + test_*.py

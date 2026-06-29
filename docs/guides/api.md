@@ -72,3 +72,28 @@ Stocks the user is tracking but may not own. Same shape as holdings under `/api/
 
 **Fields** — required: `ticker`. Optional: `company_name`, `sector`, `reason_to_watch`, `notes`.
 No numeric fields, so the only validation failure is a missing/oversized `ticker`.
+
+## Market data
+
+Live quotes and price history, fetched via a swappable provider (default: **yfinance**,
+no API key) and cached in the `market_data_cache` table (quote TTL ~2 min, history
+longer by range). Numeric fields are JSON **strings** (Decimal). Unknown ticker → `404`.
+
+| Method | Path | Purpose | Success / Errors |
+|--------|------|---------|------------------|
+| GET | `/api/market/quote/{ticker}` | current quote | `200` / `404` |
+| GET | `/api/market/history/{ticker}?range=1d\|1w\|1m\|1y` | OHLCV history (default `1d`) | `200` / `404` / `422` |
+
+**Quote** — `ticker`, `price`, `change`, `change_percent`, `previous_close`, plus optional
+`open`, `day_high`, `day_low`, `volume`, `as_of`.
+
+**PriceHistory** — `ticker`, `range`, and `candles[]` (each: `timestamp`, `open`, `high`,
+`low`, `close`, `volume`).
+
+```jsonc
+// GET /api/market/quote/NVDA  -> 200
+{ "ticker": "NVDA", "price": "192.5300", "change": "-2.2700",
+  "change_percent": "-1.1653", "previous_close": "194.8000",
+  "open": "194.0000", "day_high": "195.1000", "day_low": "191.5000",
+  "volume": 178906300, "as_of": "…" }
+```
