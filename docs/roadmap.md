@@ -4,10 +4,10 @@ Single source of truth for project progress and the **current phase's** detailed
 
 ## Current Status
 
-- **Active Phase: Phase 4 — Market Data Integration**
-- **Completed: Phase 0, Phase 1, Phase 2, Phase 3**
+- **Active Phase: Phase 5 — News and Financial Data Integration**
+- **Completed: Phase 0, Phase 1, Phase 2, Phase 3, Phase 4**
 
-Phase 3 (Holdings/Watchlist CRUD) is complete and merged to `main` (PR #3). Phase 4 adds market data: a backend provider abstraction to fetch current price, daily change, and price history for holdings/watchlist tickers, cached to respect API rate limits, then surfaced as prices + basic charts in the frontend.
+Phase 4 (Market Data Integration) is complete and merged to `main` (PR #5). Phase 5 adds news and financial data: provider interfaces for company news and latest financial/earnings snapshots, cached and shaped into compact form (for the AI in Phase 6).
 
 ## Phase Overview
 
@@ -15,8 +15,8 @@ Phase 3 (Holdings/Watchlist CRUD) is complete and merged to `main` (PR #3). Phas
 - [x] **Phase 1 — Repository and Development Environment Setup**
 - [x] **Phase 2 — Backend and Database Foundation**
 - [x] **Phase 3 — Holdings and Watchlist CRUD**
-- [ ] **Phase 4 — Market Data Integration**  ← current
-- [ ] **Phase 5 — News and Financial Data Integration**
+- [x] **Phase 4 — Market Data Integration**
+- [ ] **Phase 5 — News and Financial Data Integration**  ← current
 - [ ] **Phase 6 — AI Report Generation**
 - [ ] **Phase 7 — Chat Module**
 - [ ] **Phase 8 — Export and Logging**
@@ -120,7 +120,7 @@ Phase 3 is complete when:
 - CI remains green.
 - Phase 3 stays focused on manual management — no market data or AI features.
 
-## Current Phase Detail: Phase 4 — Market Data Integration
+## Phase 4 Detail (completed — merged in PR #5, 2026-06-29)
 
 ### Goal
 
@@ -193,3 +193,66 @@ A batch `GET /api/market/quotes?tickers=A,B,C` may be added in step 6 if the tab
 - Provider sits behind `MarketDataProvider`; swapping providers needs no change to service/router.
 - Backend tests pass with the provider mocked (no network in CI); `ruff` clean; frontend `typecheck` + `build` pass.
 - No news/AI/index scope crept in.
+
+## Current Phase Detail: Phase 5 — News and Financial Data Integration
+
+### Goal
+
+Fetch **company news** and a **latest financial/earnings snapshot** per holdings/watchlist ticker, behind provider interfaces (mirroring Phase 4's `MarketDataProvider`), cached in `market_data_cache`, and shaped into **compact** form — headlines/metadata + a snapshot, never full articles or full statements. Backend-only; this prepares the data the Phase 6 AI will consume.
+
+### Provider Decision
+
+**yfinance** supplies both news and financials — no new dependency, no API key (consistent with Phase 4; swapped at deployment). It exposes `.news` (Yahoo headlines) and `.info` / statements / `.calendar` (revenue, EPS, margins, earnings dates). News is a **secondary signal**: yfinance's feed is thinner/less reliable than its prices, which is acceptable since news is not core to the product.
+
+### In Scope
+
+- Two backend modules, each the standard `provider → service → repository → router` + `schemas`:
+  - `news/` — `NewsProvider` Protocol, `providers/yfinance_news_provider.py`, cache-aside service, repository (reuse `market_data_cache`), router.
+  - `financials/` — `FinancialDataProvider` Protocol, `providers/yfinance_financials_provider.py`, service, repository, router.
+- Compact shapes:
+  - `NewsItem`: `headline`, `source`, `published_at`, `summary?`, `url?`, `ticker`.
+  - `FinancialSnapshot`: `ticker`, optional `revenue`, `revenue_growth`, `eps`, `net_income`, `gross_margin`, `operating_margin`, `last_earnings_date`, `next_earnings_date`, plus basic profile (`company_name`, `sector`, `industry`, `market_cap`).
+- Endpoints: `GET /api/news/{ticker}` (recent items, capped) and `GET /api/financials/{ticker}`.
+- Caching via `market_data_cache`: news medium TTL (~15 min), financials long TTL (~1 day).
+- Token discipline: cap news items, trim summaries, snapshot fields only.
+- Tests: providers mocked (no network in CI), cache hit/miss, unknown ticker → 404, news cap.
+
+### Out of Scope
+
+- Macro/market news (yfinance is weak at it — revisit with a news-grade provider).
+- LLM context-package assembly and any AI calls (Phase 6).
+- Frontend display of news/financials (later, with the AI/report UI).
+- New Alembic migration (reuse `market_data_cache`).
+
+### REST API Design
+
+| Method | Path | Purpose | Success / Errors |
+|--------|------|---------|------------------|
+| GET | `/api/news/{ticker}` | recent company news (compact) | 200 / 404 |
+| GET | `/api/financials/{ticker}` | latest financial snapshot + profile | 200 / 404 |
+
+### Implementation Steps
+
+1. `news/` schemas + `NewsProvider` Protocol.
+2. `news/providers/yfinance_news_provider.py` — map `yf.Ticker(t).news` → `NewsItem[]`, cap + trim, unknown ticker → 404.
+3. `news/` repository + cache-aside service + router; register in `main.py`.
+4. `financials/` schemas + `FinancialDataProvider` Protocol.
+5. `financials/providers/yfinance_financials_provider.py` — map yfinance `.info`/statements/`.calendar` → `FinancialSnapshot`.
+6. `financials/` repository + service + router; register in `main.py`.
+7. Tests (`test_news.py`, `test_financials.py`) with mocked providers.
+8. Docs + checks: update `docs/guides/api.md` (+ `backend.md`); `ruff`, `pytest`; append `CHANGELOG.md`.
+
+### Resolved Decisions
+
+- **Provider:** yfinance for both news and financials (no new dependency, no key; swap at deployment).
+- **Scope:** backend-only (no frontend this phase).
+- **Macro news:** deferred (yfinance limitation).
+- **Cache:** reuse `market_data_cache`; no new migration.
+
+### Acceptance Criteria
+
+- `GET /api/news/{ticker}` returns recent compact news items; unknown ticker → 404.
+- `GET /api/financials/{ticker}` returns a compact snapshot + basic profile; unknown ticker → 404.
+- Both cached in `market_data_cache`; repeats don't re-hit yfinance within TTL.
+- Providers sit behind their interfaces; tests pass with providers mocked (no network in CI); `ruff` clean.
+- No AI, frontend, or macro-news scope crept in.
