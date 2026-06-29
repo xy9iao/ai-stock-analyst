@@ -6,6 +6,7 @@ from app.core.errors import add_error_handlers
 from app.core.logging import configure_logging
 from app.modules.health.router import router as health_router
 from app.modules.holdings.router import router as holdings_router
+from app.modules.market_data.router import router as market_data_router
 from app.modules.watchlist.router import router as watchlist_router
 
 configure_logging()
@@ -23,3 +24,4 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(holdings_router)
 app.include_router(watchlist_router)
+app.include_router(market_data_router)
