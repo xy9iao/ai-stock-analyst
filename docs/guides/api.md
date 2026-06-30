@@ -97,3 +97,28 @@ longer by range). Numeric fields are JSON **strings** (Decimal). Unknown ticker 
   "open": "194.0000", "day_high": "195.1000", "day_low": "191.5000",
   "volume": 178906300, "as_of": "…" }
 ```
+
+## News
+
+Recent **company news** (compact metadata — headlines, not article bodies), via yfinance
+(no key), cached ~15 min. Unlike the others, an **unknown ticker returns `200` with empty
+`items`** — yfinance can't distinguish "no recent news" from "bad ticker".
+
+| Method | Path | Purpose | Success |
+|--------|------|---------|---------|
+| GET | `/api/news/{ticker}` | recent company news (capped) | `200` |
+
+**CompanyNews** — `ticker`, `items[]` (each: `headline`, `source?`, `published_at?`, `summary?`, `url?`).
+
+## Financials
+
+A compact **financial snapshot** + basic profile, via yfinance (no key), cached ~1 day.
+Numeric fields are JSON **strings** (Decimal). Unknown ticker → `404`.
+
+| Method | Path | Purpose | Success / Errors |
+|--------|------|---------|------------------|
+| GET | `/api/financials/{ticker}` | latest snapshot + profile | `200` / `404` |
+
+**FinancialSnapshot** — `ticker`, plus optional `company_name`, `sector`, `industry`,
+`market_cap`, `revenue`, `revenue_growth`, `eps`, `net_income`, `gross_margin`,
+`operating_margin`, `last_earnings_date`, `next_earnings_date`.

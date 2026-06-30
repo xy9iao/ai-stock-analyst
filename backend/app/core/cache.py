@@ -1,4 +1,9 @@
-"""Cache layer over the market_data_cache table — the only DB access for market data."""
+"""Shared TTL cache over the market_data_cache table.
+
+A generic dict-payload cache used by market data, news, and financials. Keyed by
+an opaque cache_key; freshness via expires_at. (Naive datetimes from SQLite are
+treated as UTC so comparisons never raise.)
+"""
 
 from datetime import UTC, datetime, timedelta
 
@@ -9,7 +14,6 @@ from app.models import MarketDataCache
 
 
 def _as_utc(value: datetime) -> datetime:
-    """Treat naive datetimes (e.g. from SQLite) as UTC so comparisons are safe."""
     return value if value.tzinfo else value.replace(tzinfo=UTC)
 
 
