@@ -20,7 +20,7 @@ The frontend should call backend API routes. It should not directly call Postgre
 ```txt
 backend/
 ├── app/
-│   ├── main.py              # FastAPI app + router registration (health, holdings, watchlist, market, news, financials, reports)
+│   ├── main.py              # FastAPI app + router registration (health, holdings, watchlist, market, news, financials, reports, chat)
 │   ├── core/
 │   │   ├── cache.py         # shared TTL cache (market data, news, financials)
 │   │   ├── config.py        # typed pydantic-settings
@@ -59,12 +59,18 @@ backend/
 │       │   ├── service.py
 │       │   ├── router.py
 │       │   └── schemas.py
-│       └── ai/              # AI report generation (Phase 6)
-│           ├── llm_client.py       # the single OpenAI-compatible LLM call site
-│           ├── context.py          # compact DB-context assembly
-│           ├── prompt_builder.py   # system prompt (style + safety) + user prompt
-│           ├── report_generator.py # orchestration
-│           ├── repository.py       # reports table read/write
+│       ├── ai/              # AI report generation (Phase 6)
+│       │   ├── llm_client.py       # the single OpenAI-compatible LLM call site
+│       │   ├── context.py          # compact DB-context assembly
+│       │   ├── prompt_builder.py   # system prompt (style + safety) + user prompt
+│       │   ├── report_generator.py # orchestration
+│       │   ├── repository.py       # reports table read/write
+│       │   ├── router.py
+│       │   └── schemas.py
+│       └── chat/            # investment chat assistant (Phase 7)
+│           ├── context.py          # toggleable context assembly (reuses ai/context)
+│           ├── service.py          # orchestration + scope control
+│           ├── repository.py       # chat_sessions / chat_messages
 │           ├── router.py
 │           └── schemas.py
 ├── alembic/
