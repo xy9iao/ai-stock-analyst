@@ -2,6 +2,12 @@
 
 Build history by phase. The active phase and its detailed scope live in `docs/roadmap.md`; this file is the frozen record of what was completed. Per the Per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
 
+## Phase 7 — Chat Module (done 2026-06-30)
+
+- Built: an investment-focused, multi-turn chat assistant (backend-only). New `chat/` module — `schemas` (with `ChatContextOptions` toggles), `repository` (sessions + messages over the existing `chat_sessions`/`chat_messages` tables), `context.py` (modular toggleable context assembly, reusing `ai/context`), `service.py` (history + injected context → LLM → persist; investment-scope system prompt). Extended `ai/llm_client` with a multi-turn `chat(messages)` and refactored `complete()` to delegate to it (still the single LLM call site). Endpoints `POST /api/chat/messages` (creates/continues a session), `GET /api/chat/sessions`, `GET /api/chat/sessions/{id}/messages`. 7 tests with the LLM + context mocked (43 total).
+- Files: `backend/app/modules/chat/` (`schemas`, `repository`, `context`, `service`, `router`), `backend/app/modules/ai/llm_client.py` (multi-turn `chat`), `backend/app/main.py` (router), `backend/tests/test_chat.py`; docs (`docs/guides/{api,backend}.md`).
+- Key decisions: **modular/toggleable context injection** (`include_holdings`, `include_watchlist`, `ticker`, `include_recent_reports`) — designed so the future chat UI is just toggle buttons; reuses `ai/context`; **every LLM call still routes through `ai/llm_client`** (extended to multi-turn); investment-scope + safety boundary in the system prompt; history capped (last 20 messages); backend-only; no new migration (chat tables exist); tests mock the LLM (no network/cost/key in CI).
+
 ## Phase 6 — AI Report Generation (done 2026-06-30)
 
 - Built: the first LLM phase — a single `ai/` module generating **single-stock** and **portfolio** investment reports. `llm_client.py` (the one OpenAI-compatible call site, DeepSeek), `context.py` (compact DB-context injection — holdings/watchlist + cached market/news/financials → a small text block), `prompt_builder.py` (conclusion-first style, action labels, confidence, + the financial-advice safety boundary), `report_generator.py` (orchestration), `repository.py` (reports table). Endpoints `POST /api/reports` (`single_stock`|`portfolio`), `GET /api/reports`, `GET /api/reports/{id}`; Markdown stored in `reports`. 6 tests with the LLM + context mocked (36 total). Backend-only.

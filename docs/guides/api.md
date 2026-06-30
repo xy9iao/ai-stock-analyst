@@ -140,3 +140,19 @@ an OpenAI-compatible LLM (DeepSeek, configured by `LLM_*`). **Every** LLM call r
 required for `single_stock` (else `422`); unknown ticker → `404`; missing key → `503`; LLM error → `502`.
 
 **ReportRead** — `id`, `report_type`, `title`, `content_markdown`, `created_at`.
+
+## Chat
+
+An investment-focused chat assistant (multi-turn, backend-only). Routes through the
+centralized `ai/llm_client`; stores history in `chat_sessions`/`chat_messages`. Context
+injection is **toggleable per message**.
+
+| Method | Path | Purpose | Success / Errors |
+|--------|------|---------|------------------|
+| POST | `/api/chat/messages` | send a message, get a reply | `201` / `404` / `422` / `502` |
+| GET | `/api/chat/sessions` | list chat sessions | `200` |
+| GET | `/api/chat/sessions/{id}/messages` | a session's messages | `200` / `404` |
+
+`POST` body: `{ "message": str, "session_id"?: int, "context"?: { "include_holdings"?: bool,
+"include_watchlist"?: bool, "ticker"?: str, "include_recent_reports"?: bool } }` — omit
+`session_id` to start a new conversation. Returns `{ session_id, reply }`.
