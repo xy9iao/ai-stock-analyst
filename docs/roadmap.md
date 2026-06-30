@@ -4,10 +4,11 @@ Single source of truth for project progress and the **current phase's** detailed
 
 ## Current Status
 
-- **Active: Frontend MVP UI** (reports + chat pages) — bringing the UI up to the feature-complete backend, ahead of Phase 8.
-- **Completed: Phase 0 – Phase 7 (backend MVP)**
+- **Status: MVP complete** — backend + frontend cover every feature.
+- **Completed: Phase 0 – Phase 7**, plus the MVP frontend (reports + chat pages) and one-command Docker dev (PR #10).
+- **Next: Phase 8 — Export & Logging** (the numbered roadmap resumes here).
 
-The backend MVP is feature-complete (PRs #3–#8). The frontend now covers all features — Holdings/Watchlist/Stock-detail (Phases 3–4) plus the new **Reports** and **Chat** pages. After this, the numbered phases resume at Phase 8 (Export).
+The **MVP is done**: holdings/watchlist, market data, news/financials, AI reports, and chat — all reachable from the frontend, with `docker compose up --build` running the whole stack. Remaining phases are polish/infra.
 
 ## Phase Overview
 

@@ -6,39 +6,23 @@ This project is for investment research and decision support only. It is not a t
 
 ## Current Status
 
-Phases 0–2 are complete.
+**MVP complete.** All core features are built end to end — backend *and* frontend:
 
-Current active phase: **Phase 3: Holdings and Watchlist CRUD**.
+- **Holdings & Watchlist** — manual CRUD with validation.
+- **Market data** — live quotes, daily change, and price/volume charts (yfinance behind a provider abstraction, cached).
+- **News & financials** — company news and compact financial snapshots.
+- **AI reports** — single-stock and portfolio research reports (DeepSeek; Markdown, stored).
+- **Chat** — an investment-focused assistant with toggleable context injection.
 
-Phase 3 builds the first real product features on the Phase 2 foundation: manual CRUD for Holdings and Watchlist items, end to end (backend `router → service → repository` + Pydantic schemas, plus frontend pages). It does not implement market data or AI yet. See [Roadmap & Progress](docs/roadmap.md) for the detailed current-phase scope.
+Run the whole stack with one command: `docker compose up --build` (see [Docker Compose](#docker-compose-one-command)).
 
-Completed in Phases 0–2:
-
-- Planning and design (charter, vision, requirements, architecture, AI design, decisions)
-- FastAPI backend health endpoint and Next.js dashboard health check
-- PostgreSQL Docker service and Docker Compose local stack
-- Typed `pydantic-settings` config, SQLAlchemy 2.x models, Alembic migrations (8 initial tables)
-- Core error handling, logging, and backend tests
-- Basic GitHub Actions CI
+The remaining roadmap is polish/infra — Export, UI polish, testing, README, deploy-prep. See [Roadmap & Progress](docs/roadmap.md) and the [CHANGELOG](CHANGELOG.md) for detail.
 
 Project docs:
 
 - [Roadmap & Progress](docs/roadmap.md)
-- [Backend Guide](docs/guides/backend.md)
-- [Database Guide](docs/guides/database.md)
+- [Backend Guide](docs/guides/backend.md) · [API Guide](docs/guides/api.md) · [Database Guide](docs/guides/database.md)
 - [Development Workflow](docs/guides/development-workflow.md)
-
-In progress:
-
-- Holdings CRUD
-- Watchlist CRUD
-
-Not started yet:
-
-- Market data integration
-- News integration
-- AI reports
-- Chat
 
 ## Tech Stack
 

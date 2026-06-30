@@ -2,6 +2,12 @@
 
 Build history by phase. The active phase and its detailed scope live in `docs/roadmap.md`; this file is the frozen record of what was completed. Per the Per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
 
+## Docker Compose — one-command dev (done 2026-06-30)
+
+- Built: `docker compose up --build` now boots Postgres + backend + frontend working end to end (macOS + Windows). The frontend uses a same-origin `/api` proxy (a Next.js rewrite → `BACKEND_URL`); the backend container runs `alembic upgrade head` before uvicorn and reads the root `.env` (DeepSeek key). Fixes the prior bug where the baked `NEXT_PUBLIC_API_BASE_URL=http://backend:8000` was unreachable from the browser, and `alembic.ini` is now copied into the backend image so migrations run in-container.
+- Files: `docker-compose.yml`, `frontend/Dockerfile`, `backend/Dockerfile`, `frontend/next.config.ts` (rewrite), `frontend/lib/api/client.ts` (relative base), `frontend/app/page.tsx` (client-side health), `README.md`.
+- Key decisions: **Option A1 — same-origin proxy** over hardcoding a dev URL (also makes CORS moot); migrations run on container start; hot reload deferred (production build).
+
 ## Frontend MVP UI — Reports & Chat pages (done 2026-06-30)
 
 - Built: the frontend for the backend-only AI features, completing the MVP UI. A **Reports page** (`/reports`) — generate single-stock/portfolio reports and render the Markdown (react-markdown + GFM, Tailwind typography) with a list of past reports; a **Chat page** (`/chat`) — multi-turn conversation with **toggleable context** (holdings/watchlist/recent-reports checkboxes + a focus-ticker input). Dashboard nav links to both; typed API clients.
