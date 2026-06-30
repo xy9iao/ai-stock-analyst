@@ -20,8 +20,12 @@ services:
     build:
       context: ./backend
     container_name: ai-stock-analyst-backend
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgresql+psycopg://ai_stock_analyst:ai_stock_analyst_password@postgres:5432/ai_stock_analyst
+    command: sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     depends_on:
@@ -31,9 +35,11 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        BACKEND_URL: http://backend:8000
     container_name: ai-stock-analyst-frontend
     environment:
-      NEXT_PUBLIC_API_BASE_URL: http://backend:8000
+      BACKEND_URL: http://backend:8000
     ports:
       - "3000:3000"
     depends_on:

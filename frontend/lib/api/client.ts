@@ -1,5 +1,7 @@
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+// Default to relative URLs so requests are same-origin and get proxied to the
+// backend by the Next.js rewrite in next.config.ts — works identically for local
+// dev and Docker Compose. Override with NEXT_PUBLIC_API_BASE_URL if ever needed.
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 /** Handled backend errors arrive as {"detail": {"code", "message"}} (see core/errors.py). */
 export type ApiErrorDetail = { code: string; message: string };
