@@ -38,6 +38,12 @@ export default async function DashboardPage() {
             <Link href="/watchlist" className="hover:text-emerald-700">
               Watchlist
             </Link>
+            <Link href="/reports" className="hover:text-emerald-700">
+              Reports
+            </Link>
+            <Link href="/chat" className="hover:text-emerald-700">
+              Chat
+            </Link>
           </nav>
         </header>
 

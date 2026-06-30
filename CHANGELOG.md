@@ -2,6 +2,12 @@
 
 Build history by phase. The active phase and its detailed scope live in `docs/roadmap.md`; this file is the frozen record of what was completed. Per the Per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
 
+## Frontend MVP UI — Reports & Chat pages (done 2026-06-30)
+
+- Built: the frontend for the backend-only AI features, completing the MVP UI. A **Reports page** (`/reports`) — generate single-stock/portfolio reports and render the Markdown (react-markdown + GFM, Tailwind typography) with a list of past reports; a **Chat page** (`/chat`) — multi-turn conversation with **toggleable context** (holdings/watchlist/recent-reports checkboxes + a focus-ticker input). Dashboard nav links to both; typed API clients.
+- Files: `frontend/app/{reports,chat}/page.tsx`, `frontend/components/reports/MarkdownReport.tsx` (real markdown renderer), `frontend/lib/api/{reports,chat}.ts`, `frontend/app/page.tsx` (nav), `frontend/tailwind.config.ts` + `package.json` (react-markdown, remark-gfm, @tailwindcss/typography).
+- Key decisions: pulled the UI work ahead of Phase 8 (Export) to bring the frontend up to the feature-complete backend; reused the shared `apiFetch` boundary; `react-markdown` + `@tailwindcss/typography` for report rendering; chat context checkboxes map 1:1 to the backend `ChatContextOptions`.
+
 ## Phase 7 — Chat Module (done 2026-06-30)
 
 - Built: an investment-focused, multi-turn chat assistant (backend-only). New `chat/` module — `schemas` (with `ChatContextOptions` toggles), `repository` (sessions + messages over the existing `chat_sessions`/`chat_messages` tables), `context.py` (modular toggleable context assembly, reusing `ai/context`), `service.py` (history + injected context → LLM → persist; investment-scope system prompt). Extended `ai/llm_client` with a multi-turn `chat(messages)` and refactored `complete()` to delegate to it (still the single LLM call site). Endpoints `POST /api/chat/messages` (creates/continues a session), `GET /api/chat/sessions`, `GET /api/chat/sessions/{id}/messages`. 7 tests with the LLM + context mocked (43 total).
