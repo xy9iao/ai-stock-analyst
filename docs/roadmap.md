@@ -337,6 +337,62 @@ Conclusion-first; suggested action (Strong Buy … Avoid) with reasoning; separa
 
 ## Current Phase Detail: Phase 7 — Chat Module
 
-**Phase 7 — Chat Module.** An investment-focused chat assistant: a backend `chat/` module that stores chat sessions + messages (tables exist from Phase 2), reuses the centralized `ai/llm_client`, injects relevant DB context (holdings/watchlist/reports) when useful, and stays scoped to investment topics (redirecting off-topic questions).
+### Goal
 
-_Detailed scope (in/out of scope, REST design, steps, test matrix) is being fleshed out now._
+An investment-focused chat assistant. Multi-turn chat with **modular, toggleable context injection** — each message declares which DB context to include (holdings, watchlist, a specific ticker, recent reports), and the service injects only what's enabled. Reuses the centralized `ai/llm_client`; stores history in the existing `chat_sessions`/`chat_messages` tables. Backend-only.
+
+### Decisions (resolved)
+
+- **Context injection:** modular/toggleable — the request carries flags (`include_holdings`, `include_watchlist`, `ticker`, `include_recent_reports`). Designed so the future chat UI is just toggle buttons over these.
+- **Scope:** backend-only (chat UI lands in the UI-polish phase).
+- **Non-streaming** (return the full reply); RAG/agents deferred.
+
+### In Scope
+
+- New `chat/` module: `schemas`, `repository` (sessions + messages CRUD), `service` (orchestration + scope control), `router`.
+- Extend `ai/llm_client` with a multi-turn `chat(messages) -> str` — still **the single LLM call site**.
+- `ChatContextOptions` toggles → the service assembles a compact context block from the enabled sources, reusing `ai/context` (holdings via portfolio context; a ticker via single-stock context) + small helpers (watchlist list, recent report titles).
+- Investment-only **scope control** in the system prompt (redirect off-topic questions).
+- Persist user + assistant messages (role + content) per session.
+
+### Out of Scope
+
+- Streaming responses; RAG/agents; frontend (UI phase).
+- New Alembic migration (`chat_sessions`/`chat_messages` exist from Phase 2).
+- Heavy per-message context beyond the four toggles (keep it compact).
+
+### REST API Design
+
+| Method | Path | Purpose | Success / Errors |
+|--------|------|---------|------------------|
+| POST | `/api/chat/messages` | send a message, get a reply (creates a session if none given) | `201` / `404` / `422` / `502` |
+| GET | `/api/chat/sessions` | list chat sessions | `200` |
+| GET | `/api/chat/sessions/{id}/messages` | a session's messages | `200` / `404` |
+
+`POST` body: `{ "session_id"?: int, "message": str, "context"?: { "include_holdings"?: bool, "include_watchlist"?: bool, "ticker"?: str, "include_recent_reports"?: bool } }` → returns `{ session_id, reply }`.
+
+### Implementation Steps
+
+1. Extend `ai/llm_client` with `chat(messages: list[dict]) -> str` (multi-turn; still the only call site).
+2. `chat/schemas.py` — `ChatContextOptions`, `ChatMessageRequest`, `ChatMessageRead`, `ChatSessionRead`.
+3. `chat/repository.py` — create session, append message, list sessions, get a session's messages.
+4. `chat/context.py` — assemble the compact context block from the enabled toggles (reuse `ai/context`).
+5. `chat/service.py` — orchestrate: load/create session + history → build context → build messages (system + context + history + user) → `llm_client.chat` → store user + assistant → return.
+6. `chat/router.py` — endpoints; register in `main.py`.
+7. Tests with `llm_client` + context mocked (no network/cost).
+8. Docs + checks: `docs/guides/api.md` (+ `backend.md`); `ruff`, `pytest`; append `CHANGELOG.md`.
+
+### Test Matrix
+
+- POST with no `session_id` → `201`, creates a session, returns `reply` + `session_id`.
+- POST with an existing `session_id` → continues; the session's message history grows (user + assistant stored).
+- Context toggles: `include_holdings` / `ticker` cause the corresponding context builder to be invoked (mocked).
+- `GET /api/chat/sessions` lists; `GET …/{id}/messages` returns the conversation; unknown session → `404`.
+
+### Acceptance Criteria
+
+- A user can send chat messages and get investment-focused replies; history persists across a session.
+- Context injection is toggleable per request (holdings / watchlist / ticker / recent reports).
+- **Every** LLM call goes through `ai/llm_client`.
+- Tests pass with the LLM mocked; `ruff` clean.
+- No streaming, frontend, or out-of-scope context crept in.
