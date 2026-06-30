@@ -259,6 +259,78 @@ Fetch **company news** and a **latest financial/earnings snapshot** per holdings
 
 ## Current Phase Detail: Phase 6 — AI Report Generation
 
-**Phase 6 — AI Report Generation.** The first AI phase: a single backend `ai/` module (`prompt_builder` → `llm_client` → `report_generator`) that loads holdings/watchlist + market/news/financials into a **compact** context, calls an OpenAI-compatible LLM (`LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL`, default `deepseek-chat`), and stores the Markdown result in the `reports` table.
+### Goal
 
-_Detailed scope (in/out of scope, REST design, steps, test matrix) will be fleshed out when Phase 6 work begins._
+Generate AI investment reports — **single-stock** and **portfolio** — behind one centralized `ai/` module. Load DB rows (holdings/watchlist) + cached market/news/financials into a **compact** context, call DeepSeek (OpenAI-compatible), store the Markdown in the `reports` table, return it. Backend-only this phase.
+
+### LLM Decision
+
+**DeepSeek** (cloud, OpenAI-compatible) via the existing `LLM_*` config. `.env`: `LLM_BASE_URL=https://api.deepseek.com`, `LLM_API_KEY=<key>`, `LLM_MODEL=deepseek-chat`. The client uses the `openai` SDK pointed at `LLM_BASE_URL`. Tests **mock** the client (no live calls / cost / key needed in CI); a real key is only needed for live verification.
+
+### In Scope
+
+- New `ai/` module — **the only place LLM calls happen**:
+  - `llm_client.py` — thin OpenAI-compatible chat wrapper (`complete(system, user) -> str`); LLM/network errors → `AppError(502)`.
+  - `context.py` — assemble the **compact context** (loads holdings/watchlist repos + market/news/financials services into compact shapes).
+  - `prompt_builder.py` — system prompt (conclusion-first style, action labels, confidence, long-term/swing views, beginner-friendly, **financial-advice safety boundary**) + user prompt per report type.
+  - `report_generator.py` — orchestrate build → call → store → return.
+  - `repository.py` — `reports` table read/write (create, list, get).
+  - `schemas.py`, `router.py`.
+- Add the `openai` dependency.
+- Report types: **single_stock** (input: ticker) and **portfolio** (uses all holdings).
+- Persist to the existing `reports` table (`report_type`, `title`, `content_markdown`).
+
+### Out of Scope
+
+- Chat (Phase 7); watchlist + market-overview report types (later — same pipeline); RAG/agents; streaming.
+- Frontend report UI (later UI phase) — view via `/docs` / curl for now.
+- New Alembic migration (the `reports` table exists from Phase 2).
+
+### REST API Design
+
+| Method | Path | Purpose | Success / Errors |
+|--------|------|---------|------------------|
+| POST | `/api/reports` | generate a report (`single_stock` or `portfolio`) | `201` / `422` / `404` / `502` |
+| GET | `/api/reports` | list recent reports | `200` |
+| GET | `/api/reports/{id}` | get one report | `200` / `404` |
+
+`POST` body: `{ "report_type": "single_stock" | "portfolio", "ticker"?: str }` (ticker required for `single_stock`).
+
+### Compact Context (token discipline)
+
+- **single_stock:** the holding/watchlist row if present + latest quote + a few news headlines + the financial snapshot — compact shapes, capped.
+- **portfolio:** all holdings with quote + unrealized P/L + a short market summary + top headlines — capped (limit holdings/news items).
+- Never send raw API payloads, full articles, or full statements (`planning/ai-design.md` §16–18).
+
+### Report Style (from `planning/ai-design.md`)
+
+Conclusion-first; suggested action (Strong Buy … Avoid) with reasoning; separate long-term vs swing view; confidence (Low/Med/High); beginner-friendly; risks when meaningful; safety boundary (no "guaranteed profit", "this is not financial advice"). Markdown output.
+
+### Implementation Steps
+
+1. Add `openai` dep; document `.env` (`LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL`).
+2. `ai/llm_client.py` — the single LLM call site (OpenAI-compatible chat completion).
+3. `ai/schemas.py` — `ReportRequest` (report_type enum, optional ticker), `ReportRead`.
+4. `ai/context.py` — compact context assembly for single-stock + portfolio.
+5. `ai/prompt_builder.py` — system prompt (style + safety boundary) + per-type user prompt.
+6. `ai/report_generator.py` + `ai/repository.py` — orchestrate, persist to `reports`.
+7. `ai/router.py` — endpoints; register in `main.py`.
+8. Tests with `llm_client` mocked (no network/cost).
+9. Docs + checks: `docs/guides/api.md` (+ `backend.md`, `.env.example`); `ruff`, `pytest`; append `CHANGELOG.md`.
+
+### Resolved Decisions
+
+- **LLM:** DeepSeek (cloud, OpenAI-compatible; key in `.env`); `openai` SDK client.
+- **Report types:** single-stock + portfolio (watchlist/market-overview later).
+- **Scope:** backend-only.
+- **Persistence:** existing `reports` table (no migration).
+- **Tests:** mock the LLM client — no live calls, cost, or key in CI.
+
+### Acceptance Criteria
+
+- `POST /api/reports` (single_stock + ticker) → `201`, a Markdown report stored in `reports` and returned.
+- `POST /api/reports` (portfolio) → `201`, a portfolio Markdown report.
+- `GET /api/reports` lists; `GET /api/reports/{id}` fetches; missing → `404`; bad body → `422`.
+- **Every** LLM call goes through `ai/llm_client.py`; context is compact (no raw payloads); the safety boundary is in the system prompt.
+- Tests pass with the LLM mocked; `ruff` clean.
+- No chat, frontend, or extra report types crept in.
