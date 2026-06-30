@@ -1,11 +1,12 @@
-type MarkdownReportProps = {
-  markdown: string;
-};
+"use client";
 
-export function MarkdownReport({ markdown }: MarkdownReportProps) {
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+export function MarkdownReport({ markdown }: { markdown: string }) {
   return (
-    <pre className="whitespace-pre-wrap rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-700">
-      {markdown}
-    </pre>
+    <div className="prose prose-slate max-w-none prose-headings:font-semibold prose-h1:text-2xl prose-h2:text-lg">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
+    </div>
   );
 }

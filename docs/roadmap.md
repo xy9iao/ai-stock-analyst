@@ -4,10 +4,10 @@ Single source of truth for project progress and the **current phase's** detailed
 
 ## Current Status
 
-- **Active Phase: Phase 7 — Chat Module**
-- **Completed: Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5, Phase 6**
+- **Active: Frontend MVP UI** (reports + chat pages) — bringing the UI up to the feature-complete backend, ahead of Phase 8.
+- **Completed: Phase 0 – Phase 7 (backend MVP)**
 
-Phase 6 (AI Report Generation) is complete and merged to `main` (PR #7). Phase 7 adds an investment-focused chat assistant: a backend `chat/` module storing sessions/messages, reusing the centralized `ai/llm_client` with relevant DB context injected, scoped to investment topics.
+The backend MVP is feature-complete (PRs #3–#8). The frontend now covers all features — Holdings/Watchlist/Stock-detail (Phases 3–4) plus the new **Reports** and **Chat** pages. After this, the numbered phases resume at Phase 8 (Export).
 
 ## Phase Overview
 
@@ -18,7 +18,7 @@ Phase 6 (AI Report Generation) is complete and merged to `main` (PR #7). Phase 7
 - [x] **Phase 4 — Market Data Integration**
 - [x] **Phase 5 — News and Financial Data Integration**
 - [x] **Phase 6 — AI Report Generation**
-- [ ] **Phase 7 — Chat Module**  ← current
+- [x] **Phase 7 — Chat Module**
 - [ ] **Phase 8 — Export and Logging**
 - [ ] **Phase 9 — UI Polish and Beginner Experience**
 - [ ] **Phase 10 — Testing and Quality**
@@ -335,7 +335,7 @@ Conclusion-first; suggested action (Strong Buy … Avoid) with reasoning; separa
 - Tests pass with the LLM mocked; `ruff` clean.
 - No chat, frontend, or extra report types crept in.
 
-## Current Phase Detail: Phase 7 — Chat Module
+## Phase 7 Detail (completed — merged in PR #8, 2026-06-30)
 
 ### Goal
 
