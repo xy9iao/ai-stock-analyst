@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     ]
     llm_base_url: str = ""
     llm_api_key: str = ""
-    llm_model: str = "deepseek-chat"
+    llm_model: str = "deepseek-v4-flash"
     market_data_provider: str = "yfinance"
 
     model_config = SettingsConfigDict(

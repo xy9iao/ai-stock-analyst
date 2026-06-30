@@ -10,9 +10,10 @@ def test_settings_parse_cors_origins_from_comma_separated_string() -> None:
     ]
 
 
-def test_settings_include_future_llm_defaults() -> None:
-    settings = Settings()
+def test_settings_llm_defaults() -> None:
+    # Code defaults in isolation — don't read the developer's local .env.
+    settings = Settings(_env_file=None)
 
     assert settings.llm_base_url == ""
     assert settings.llm_api_key == ""
-    assert settings.llm_model == "deepseek-chat"
+    assert settings.llm_model == "deepseek-v4-flash"
