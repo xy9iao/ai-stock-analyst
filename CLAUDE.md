@@ -69,10 +69,10 @@ pnpm install
 pnpm dev          # :3000
 pnpm typecheck    # tsc --noEmit  (CI gate)
 pnpm build        # CI gate
-pnpm lint         # next lint
+pnpm lint         # eslint .  (CI gate)
 ```
 Full stack: `docker compose up --build` (frontend :3000, backend :8000, postgres :5432).
-**Before committing:** backend → `ruff check` + `pytest`; frontend → `typecheck` + `build` (these are exactly what CI enforces).
+**Before committing:** backend → `ruff check` + `pytest`; frontend → `typecheck` + `lint` + `build` (these are exactly what CI enforces).
 
 ## Conventions
 

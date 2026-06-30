@@ -70,6 +70,7 @@ export default function WatchlistPage() {
 
   useEffect(() => {
     refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, []);
 
   function setField(field: keyof WatchlistItemInput, value: string) {

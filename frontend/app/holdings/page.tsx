@@ -90,6 +90,7 @@ export default function HoldingsPage() {
 
   useEffect(() => {
     refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, []);
 
   function setField(field: keyof HoldingInput, value: string) {
