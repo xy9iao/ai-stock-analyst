@@ -20,8 +20,9 @@ The frontend should call backend API routes. It should not directly call Postgre
 ```txt
 backend/
 ├── app/
-│   ├── main.py              # FastAPI app + router registration (health, holdings, watchlist, market)
+│   ├── main.py              # FastAPI app + router registration (health, holdings, watchlist, market, news, financials)
 │   ├── core/
+│   │   ├── cache.py         # shared TTL cache (market data, news, financials)
 │   │   ├── config.py        # typed pydantic-settings
 │   │   ├── database.py      # engine, get_db session dependency, Base
 │   │   ├── errors.py        # AppError + global handler
@@ -40,11 +41,22 @@ backend/
 │       │   ├── service.py
 │       │   ├── repository.py
 │       │   └── schemas.py
-│       └── market_data/     # provider abstraction + cache-aside (Phase 4)
-│           ├── provider.py        # MarketDataProvider Protocol
-│           ├── providers/         # concrete providers (yfinance_provider.py)
-│           ├── repository.py      # market_data_cache read/write
-│           ├── service.py         # cache-aside orchestration
+│       ├── market_data/     # provider abstraction + cache-aside (Phase 4)
+│       │   ├── provider.py        # MarketDataProvider Protocol
+│       │   ├── providers/         # yfinance_provider.py
+│       │   ├── service.py         # cache-aside (uses core/cache.py)
+│       │   ├── router.py
+│       │   └── schemas.py
+│       ├── news/            # company news (Phase 5)
+│       │   ├── provider.py        # NewsProvider Protocol
+│       │   ├── providers/         # yfinance_news_provider.py
+│       │   ├── service.py
+│       │   ├── router.py
+│       │   └── schemas.py
+│       └── financials/      # financial snapshots (Phase 5)
+│           ├── provider.py        # FinancialDataProvider Protocol
+│           ├── providers/         # yfinance_financials_provider.py
+│           ├── service.py
 │           ├── router.py
 │           └── schemas.py
 ├── alembic/

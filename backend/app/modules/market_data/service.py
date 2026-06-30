@@ -2,9 +2,9 @@
 
 from sqlalchemy.orm import Session
 
+from app.core import cache
 from app.core.config import settings
 from app.core.errors import AppError
-from app.modules.market_data import repository
 from app.modules.market_data.provider import MarketDataProvider
 from app.modules.market_data.schemas import HistoryRange, PriceHistory, Quote
 
@@ -36,12 +36,12 @@ def get_quote(db: Session, ticker: str) -> Quote:
     provider_name = settings.market_data_provider.lower()
     cache_key = f"{provider_name}:quote:{symbol}"
 
-    cached = repository.get_fresh_payload(db, cache_key)
+    cached = cache.get_fresh_payload(db, cache_key)
     if cached is not None:
         return Quote.model_validate(cached)
 
     quote = _get_provider().get_quote(symbol)
-    repository.upsert_payload(
+    cache.upsert_payload(
         db, cache_key, provider_name, quote.model_dump(mode="json"), _QUOTE_TTL_SECONDS
     )
     return quote
@@ -52,12 +52,12 @@ def get_price_history(db: Session, ticker: str, range: HistoryRange) -> PriceHis
     provider_name = settings.market_data_provider.lower()
     cache_key = f"{provider_name}:history:{symbol}:{range.value}"
 
-    cached = repository.get_fresh_payload(db, cache_key)
+    cached = cache.get_fresh_payload(db, cache_key)
     if cached is not None:
         return PriceHistory.model_validate(cached)
 
     history = _get_provider().get_price_history(symbol, range)
-    repository.upsert_payload(
+    cache.upsert_payload(
         db,
         cache_key,
         provider_name,
