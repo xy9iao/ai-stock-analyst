@@ -4,10 +4,10 @@ Single source of truth for project progress and the **current phase's** detailed
 
 ## Current Status
 
-- **Active Phase: Phase 5 — News and Financial Data Integration**
-- **Completed: Phase 0, Phase 1, Phase 2, Phase 3, Phase 4**
+- **Active Phase: Phase 6 — AI Report Generation**
+- **Completed: Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5**
 
-Phase 4 (Market Data Integration) is complete and merged to `main` (PR #5). Phase 5 adds news and financial data: provider interfaces for company news and latest financial/earnings snapshots, cached and shaped into compact form (for the AI in Phase 6).
+Phase 5 (News & Financial Data) is complete and merged to `main` (PR #6). Phase 6 is the first AI phase: a single backend `ai/` module that loads holdings/watchlist + market/news/financials into a compact context, calls an OpenAI-compatible LLM, and stores Markdown reports.
 
 ## Phase Overview
 
@@ -16,8 +16,8 @@ Phase 4 (Market Data Integration) is complete and merged to `main` (PR #5). Phas
 - [x] **Phase 2 — Backend and Database Foundation**
 - [x] **Phase 3 — Holdings and Watchlist CRUD**
 - [x] **Phase 4 — Market Data Integration**
-- [ ] **Phase 5 — News and Financial Data Integration**  ← current
-- [ ] **Phase 6 — AI Report Generation**
+- [x] **Phase 5 — News and Financial Data Integration**
+- [ ] **Phase 6 — AI Report Generation**  ← current
 - [ ] **Phase 7 — Chat Module**
 - [ ] **Phase 8 — Export and Logging**
 - [ ] **Phase 9 — UI Polish and Beginner Experience**
@@ -194,7 +194,7 @@ A batch `GET /api/market/quotes?tickers=A,B,C` may be added in step 6 if the tab
 - Backend tests pass with the provider mocked (no network in CI); `ruff` clean; frontend `typecheck` + `build` pass.
 - No news/AI/index scope crept in.
 
-## Current Phase Detail: Phase 5 — News and Financial Data Integration
+## Phase 5 Detail (completed — merged in PR #6, 2026-06-30)
 
 ### Goal
 
@@ -256,3 +256,9 @@ Fetch **company news** and a **latest financial/earnings snapshot** per holdings
 - Both cached in `market_data_cache`; repeats don't re-hit yfinance within TTL.
 - Providers sit behind their interfaces; tests pass with providers mocked (no network in CI); `ruff` clean.
 - No AI, frontend, or macro-news scope crept in.
+
+## Current Phase Detail: Phase 6 — AI Report Generation
+
+**Phase 6 — AI Report Generation.** The first AI phase: a single backend `ai/` module (`prompt_builder` → `llm_client` → `report_generator`) that loads holdings/watchlist + market/news/financials into a **compact** context, calls an OpenAI-compatible LLM (`LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL`, default `deepseek-chat`), and stores the Markdown result in the `reports` table.
+
+_Detailed scope (in/out of scope, REST design, steps, test matrix) will be fleshed out when Phase 6 work begins._
