@@ -4,10 +4,10 @@ Single source of truth for project progress and the **current phase's** detailed
 
 ## Current Status
 
-- **Active Phase: Phase 6 — AI Report Generation**
-- **Completed: Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5**
+- **Active Phase: Phase 7 — Chat Module**
+- **Completed: Phase 0, Phase 1, Phase 2, Phase 3, Phase 4, Phase 5, Phase 6**
 
-Phase 5 (News & Financial Data) is complete and merged to `main` (PR #6). Phase 6 is the first AI phase: a single backend `ai/` module that loads holdings/watchlist + market/news/financials into a compact context, calls an OpenAI-compatible LLM, and stores Markdown reports.
+Phase 6 (AI Report Generation) is complete and merged to `main` (PR #7). Phase 7 adds an investment-focused chat assistant: a backend `chat/` module storing sessions/messages, reusing the centralized `ai/llm_client` with relevant DB context injected, scoped to investment topics.
 
 ## Phase Overview
 
@@ -17,8 +17,8 @@ Phase 5 (News & Financial Data) is complete and merged to `main` (PR #6). Phase 
 - [x] **Phase 3 — Holdings and Watchlist CRUD**
 - [x] **Phase 4 — Market Data Integration**
 - [x] **Phase 5 — News and Financial Data Integration**
-- [ ] **Phase 6 — AI Report Generation**  ← current
-- [ ] **Phase 7 — Chat Module**
+- [x] **Phase 6 — AI Report Generation**
+- [ ] **Phase 7 — Chat Module**  ← current
 - [ ] **Phase 8 — Export and Logging**
 - [ ] **Phase 9 — UI Polish and Beginner Experience**
 - [ ] **Phase 10 — Testing and Quality**
@@ -257,7 +257,7 @@ Fetch **company news** and a **latest financial/earnings snapshot** per holdings
 - Providers sit behind their interfaces; tests pass with providers mocked (no network in CI); `ruff` clean.
 - No AI, frontend, or macro-news scope crept in.
 
-## Current Phase Detail: Phase 6 — AI Report Generation
+## Phase 6 Detail (completed — merged in PR #7, 2026-06-30)
 
 ### Goal
 
@@ -334,3 +334,9 @@ Conclusion-first; suggested action (Strong Buy … Avoid) with reasoning; separa
 - **Every** LLM call goes through `ai/llm_client.py`; context is compact (no raw payloads); the safety boundary is in the system prompt.
 - Tests pass with the LLM mocked; `ruff` clean.
 - No chat, frontend, or extra report types crept in.
+
+## Current Phase Detail: Phase 7 — Chat Module
+
+**Phase 7 — Chat Module.** An investment-focused chat assistant: a backend `chat/` module that stores chat sessions + messages (tables exist from Phase 2), reuses the centralized `ai/llm_client`, injects relevant DB context (holdings/watchlist/reports) when useful, and stays scoped to investment topics (redirecting off-topic questions).
+
+_Detailed scope (in/out of scope, REST design, steps, test matrix) is being fleshed out now._
