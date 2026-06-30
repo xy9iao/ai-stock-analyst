@@ -8,6 +8,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
+# Backend address baked into the build for the /api rewrite (compose passes the service URL).
+ARG BACKEND_URL=http://localhost:8000
+ENV BACKEND_URL=${BACKEND_URL}
 RUN pnpm build
 
 EXPOSE 3000

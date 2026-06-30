@@ -96,22 +96,23 @@ cp .env.example .env
 
 The `.env` file is local only. Do not commit real secrets.
 
-## Docker Compose
+## Docker Compose (one command)
 
-Start the full local stack:
+Start the whole stack — Postgres, backend, and frontend — with a single command, identical on macOS and Windows:
 
 ```bash
 docker compose up --build
 ```
 
-Services:
+This builds the images, **runs database migrations automatically**, and starts:
 
 - Frontend: http://localhost:3000
-- Backend: http://localhost:8000
-- Backend health: http://localhost:8000/api/health
+- Backend: http://localhost:8000 (health: http://localhost:8000/api/health)
 - PostgreSQL: localhost:5432
 
-Stop the stack with `Ctrl+C`.
+The frontend reaches the backend through a same-origin `/api` proxy (a Next.js rewrite), so client-side pages work with no extra config. For AI **reports and chat**, put your DeepSeek key in the root `.env` (`LLM_API_KEY=...`); the backend container reads it automatically (without it the app still runs, but reports/chat return 503).
+
+Stop with `Ctrl+C` (or `docker compose down`). Ports 3000 / 8000 / 5432 must be free first.
 
 ## Backend Commands
 
