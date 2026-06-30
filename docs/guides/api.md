@@ -122,3 +122,21 @@ Numeric fields are JSON **strings** (Decimal). Unknown ticker → `404`.
 **FinancialSnapshot** — `ticker`, plus optional `company_name`, `sector`, `industry`,
 `market_cap`, `revenue`, `revenue_growth`, `eps`, `net_income`, `gross_margin`,
 `operating_margin`, `last_earnings_date`, `next_earnings_date`.
+
+## Reports (AI)
+
+AI-generated investment reports (Markdown, stored in the `reports` table). The backend
+loads a **compact** context (holdings/watchlist + cached market/news/financials) and calls
+an OpenAI-compatible LLM (DeepSeek, configured by `LLM_*`). **Every** LLM call routes through
+`app/modules/ai/llm_client.py`.
+
+| Method | Path | Purpose | Success / Errors |
+|--------|------|---------|------------------|
+| POST | `/api/reports` | generate a report | `201` / `422` / `404` / `502` |
+| GET | `/api/reports` | list recent reports | `200` |
+| GET | `/api/reports/{id}` | get one report | `200` / `404` |
+
+`POST` body: `{ "report_type": "single_stock" | "portfolio", "ticker"?: str }` — `ticker` is
+required for `single_stock` (else `422`); unknown ticker → `404`; missing key → `503`; LLM error → `502`.
+
+**ReportRead** — `id`, `report_type`, `title`, `content_markdown`, `created_at`.
