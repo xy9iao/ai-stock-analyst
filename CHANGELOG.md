@@ -2,6 +2,12 @@
 
 Build history by phase. The active phase and its detailed scope live in `docs/roadmap.md`; this file is the frozen record of what was completed. Per the Per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
 
+## Phase 9 — UI Polish & Beginner Experience (done 2026-07-01)
+
+- Built: turned the six functional-but-plain pages into one cohesive, beginner-friendly app. **Shared top-nav shell** (`TopNav` in `layout.tsx`, active-route emerald pill; on mobile it collapses to a logo-toggled dropdown menu). **Design system** — `cva` `Button` variants (primary/secondary/ghost/danger) plus `Card`, `Input`, `Badge`, extracted from repeated inline styles; slate/emerald refined. **States** — `Skeleton` loaders, `EmptyState`, and a **four-state data pattern** (loading/load-error/empty/data), with action failures moved to **`sonner` toasts** (replacing inline red boxes). **Beginner UX** — radix **tooltips** (`InfoTip` ⓘ) explaining Avg cost / Day % / Value / Gain/Loss + the chat Context toggle, and a persistent **"research, not financial advice" footer**. Responsive pass (mobile nav). New frontend guide.
+- Files: `frontend/components/ui/{button,card,input,badge,skeleton,empty-state,tooltip,info-tip}.tsx`, `frontend/components/layout/{TopNav,Footer}.tsx`, `frontend/app/layout.tsx`, all six page files, `frontend/package.json` + `pnpm-lock.yaml` (`sonner`, `@radix-ui/react-tooltip`); docs (`docs/guides/frontend.md` new, `docs/roadmap.md`).
+- Key decisions: **frontend-only** (no backend/API/model changes); clean & minimal refinement of the existing slate/emerald (not a redesign); **standard libraries for solved problems** — `sonner` for toasts, `@radix-ui/react-tooltip` for accessible tooltips — over hand-rolling; the four-state data pattern on every list view; mobile nav collapses to a logo-triggered menu; dark mode deferred.
+
 ## Phase 8 — Export (done 2026-07-01)
 
 - Built: Markdown **export** for the two AI features, completing the roadmap's export step. A **Download .md** button on an open AI report saves its Markdown (`content_markdown`) as `<title-slug>.md`; an **Export** button on the chat page renders the conversation to Markdown (`**You:** / **Assistant:**`) and saves `chat.md`. Both are pure client-side browser downloads (Blob + anchor) — no backend, since reports are already stored as Markdown and handed to the frontend.

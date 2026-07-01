@@ -4,10 +4,10 @@ Single source of truth for project progress and the **current phase's** detailed
 
 ## Current Status
 
-- **Active: Phase 9 — UI Polish & Beginner Experience** (top-nav app shell, refined slate/emerald design system, states, beginner UX).
-- **Completed: Phase 0 – Phase 8** (Phase 8 export merged in PR #12), plus the MVP frontend, one-command Docker dev (PR #10), and the lint fix (PR #11, closed #2).
+- **Next: Phase 10 — Testing & Quality.**
+- **Completed: Phase 0 – Phase 9**, plus the MVP frontend, one-command Docker dev (PR #10), and the lint fix (PR #11, closed #2).
 
-The **MVP is done**: holdings/watchlist, market data, news/financials, AI reports, and chat — all reachable from the frontend, with `docker compose up --build` running the whole stack. **Phase 9** polishes the UI into one cohesive app: a shared top nav, a documented design system in `docs/guides/frontend.md`, loading/empty/error states, and beginner-friendly finance-term help — clean & minimal (refining slate/emerald), medium scope. Remaining phases are polish/infra.
+The **MVP is done and polished**: holdings/watchlist, market data, news/financials, AI reports, and chat — one cohesive app (shared top-nav shell, a documented design system in `docs/guides/frontend.md`, loading/empty/error states, beginner tooltips + a disclaimer footer, responsive), with `docker compose up --build` running the whole stack. Remaining phases are testing/infra.
 
 ## Phase Overview
 
@@ -20,12 +20,12 @@ The **MVP is done**: holdings/watchlist, market data, news/financials, AI report
 - [x] **Phase 6 — AI Report Generation**
 - [x] **Phase 7 — Chat Module**
 - [x] **Phase 8 — Export** (logging deferred)
-- [ ] **Phase 9 — UI Polish and Beginner Experience**  ← current
-- [ ] **Phase 10 — Testing and Quality**
+- [x] **Phase 9 — UI Polish and Beginner Experience**
+- [ ] **Phase 10 — Testing and Quality**  ← next
 - [ ] **Phase 11 — README and Public Repo Documentation**
 - [ ] **Phase 12 — Future Deployment Preparation**
 
-## Phase 9 Detail (active)
+## Phase 9 Detail (completed)
 
 ### Goal
 
