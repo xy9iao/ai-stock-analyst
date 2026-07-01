@@ -37,20 +37,6 @@ export default function DashboardPage() {
               </p>
             </div>
           </div>
-          <nav className="flex gap-4 text-sm font-medium text-slate-700">
-            <Link href="/holdings" className="hover:text-emerald-700">
-              Holdings
-            </Link>
-            <Link href="/watchlist" className="hover:text-emerald-700">
-              Watchlist
-            </Link>
-            <Link href="/reports" className="hover:text-emerald-700">
-              Reports
-            </Link>
-            <Link href="/chat" className="hover:text-emerald-700">
-              Chat
-            </Link>
-          </nav>
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">
