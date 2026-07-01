@@ -5,8 +5,17 @@ import { useState } from "react";
 import { MarkdownReport } from "@/components/reports/MarkdownReport";
 import { Button } from "@/components/ui/button";
 import { sendMessage, type ChatContextOptions } from "@/lib/api/chat";
+import { downloadText } from "@/lib/download";
 
 type Msg = { role: string; content: string };
+
+function chatToMarkdown(messages: Msg[]): string {
+  const lines = ["# Chat transcript", ""];
+  for (const m of messages) {
+    lines.push(m.role === "user" ? "**You:**" : "**Assistant:**", "", m.content, "");
+  }
+  return lines.join("\n");
+}
 
 const inputClass =
   "h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400";
@@ -56,9 +65,18 @@ export default function ChatPage() {
             <h1 className="text-2xl font-semibold text-slate-950">Chat</h1>
             <p className="text-sm text-slate-600">Ask about your holdings, a stock, or the market.</p>
           </div>
-          <Button type="button" onClick={newChat}>
-            New chat
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={() => downloadText("chat.md", chatToMarkdown(messages))}
+              disabled={messages.length === 0}
+            >
+              Export
+            </Button>
+            <Button type="button" onClick={newChat}>
+              New chat
+            </Button>
+          </div>
         </header>
 
         <div className="flex flex-wrap items-center gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">

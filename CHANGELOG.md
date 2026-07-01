@@ -2,6 +2,12 @@
 
 Build history by phase. The active phase and its detailed scope live in `docs/roadmap.md`; this file is the frozen record of what was completed. Per the Per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
 
+## Phase 8 — Export (done 2026-07-01)
+
+- Built: Markdown **export** for the two AI features, completing the roadmap's export step. A **Download .md** button on an open AI report saves its Markdown (`content_markdown`) as `<title-slug>.md`; an **Export** button on the chat page renders the conversation to Markdown (`**You:** / **Assistant:**`) and saves `chat.md`. Both are pure client-side browser downloads (Blob + anchor) — no backend, since reports are already stored as Markdown and handed to the frontend.
+- Files: `frontend/lib/download.ts` (new — `downloadText` + `slugFilename`), `frontend/app/reports/page.tsx` (Download button), `frontend/app/chat/page.tsx` (Export button + `chatToMarkdown`); docs (`docs/roadmap.md`).
+- Key decisions: **frontend-only** (no export endpoints) — the data is already Markdown on the client, so a server round-trip adds nothing; export produces **Obsidian-friendly** plain Markdown; the "daily log / logging" idea is **deferred** (underspecified, low MVP value).
+
 ## Docker Compose — one-command dev (done 2026-06-30)
 
 - Built: `docker compose up --build` now boots Postgres + backend + frontend working end to end (macOS + Windows). The frontend uses a same-origin `/api` proxy (a Next.js rewrite → `BACKEND_URL`); the backend container runs `alembic upgrade head` before uvicorn and reads the root `.env` (DeepSeek key). Fixes the prior bug where the baked `NEXT_PUBLIC_API_BASE_URL=http://backend:8000` was unreachable from the browser, and `alembic.ini` is now copied into the backend image so migrations run in-container.

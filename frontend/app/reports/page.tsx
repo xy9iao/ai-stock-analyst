@@ -10,6 +10,7 @@ import {
   type Report,
   type ReportType,
 } from "@/lib/api/reports";
+import { downloadText, slugFilename } from "@/lib/download";
 
 const inputClass =
   "h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400";
@@ -100,6 +101,16 @@ export default function ReportsPage() {
 
         {selected ? (
           <article className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 flex justify-end">
+              <Button
+                type="button"
+                onClick={() =>
+                  downloadText(slugFilename(selected.title), selected.content_markdown)
+                }
+              >
+                Download .md
+              </Button>
+            </div>
             <MarkdownReport markdown={selected.content_markdown} />
           </article>
         ) : null}
