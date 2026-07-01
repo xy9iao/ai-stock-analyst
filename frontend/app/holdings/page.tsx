@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InfoTip } from "@/components/ui/info-tip";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -218,11 +219,23 @@ export default function HoldingsPage() {
                   <th className="px-4 py-3 font-medium">Ticker</th>
                   <th className="px-4 py-3 font-medium">Company</th>
                   <th className="px-4 py-3 font-medium">Shares</th>
-                  <th className="px-4 py-3 font-medium">Avg cost</th>
+                  <th className="px-4 py-3 font-medium">
+                    <InfoTip label="Avg cost">Your average purchase price per share.</InfoTip>
+                  </th>
                   <th className="px-4 py-3 font-medium">Price</th>
-                  <th className="px-4 py-3 font-medium">Day %</th>
-                  <th className="px-4 py-3 font-medium">Value</th>
-                  <th className="px-4 py-3 font-medium">Gain/Loss</th>
+                  <th className="px-4 py-3 font-medium">
+                    <InfoTip label="Day %">Change in the price so far today.</InfoTip>
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    <InfoTip label="Value">
+                      Shares × current price — what the position is worth now.
+                    </InfoTip>
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    <InfoTip label="Gain/Loss">
+                      Percent change from your average cost to the current price.
+                    </InfoTip>
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>

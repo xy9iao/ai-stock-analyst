@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InfoTip } from "@/components/ui/info-tip";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getQuote, type Quote } from "@/lib/api/market";
@@ -189,7 +190,9 @@ export default function WatchlistPage() {
                   <th className="px-4 py-3 font-medium">Sector</th>
                   <th className="px-4 py-3 font-medium">Reason to watch</th>
                   <th className="px-4 py-3 font-medium">Price</th>
-                  <th className="px-4 py-3 font-medium">Day %</th>
+                  <th className="px-4 py-3 font-medium">
+                    <InfoTip label="Day %">Change in the price so far today.</InfoTip>
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { MarkdownReport } from "@/components/reports/MarkdownReport";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { InfoTip } from "@/components/ui/info-tip";
 import { Input } from "@/components/ui/input";
 import { sendMessage, type ChatContextOptions } from "@/lib/api/chat";
 import { downloadText } from "@/lib/download";
@@ -78,7 +79,11 @@ export default function ChatPage() {
         </header>
 
         <div className="flex flex-wrap items-center gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm">
-          <span className="font-medium text-slate-500">Context:</span>
+          <span className="font-medium text-slate-500">
+            <InfoTip label="Context">
+              Pick which of your data the assistant can see when answering.
+            </InfoTip>
+          </span>
           <label className="flex items-center gap-1.5 text-slate-700">
             <input type="checkbox" checked={!!ctx.include_holdings} onChange={() => toggle("include_holdings")} />
             Holdings
