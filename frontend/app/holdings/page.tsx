@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 
 import Link from "next/link";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   createHolding,
   deleteHolding,
@@ -114,7 +117,6 @@ export default function HoldingsPage() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setSubmitting(true);
-    setError(null);
     try {
       if (editingId === null) {
         await createHolding(form);
@@ -124,19 +126,18 @@ export default function HoldingsPage() {
       cancelEdit();
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      toast.error(err instanceof Error ? err.message : "Save failed");
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleDelete(id: number) {
-    setError(null);
     try {
       await deleteHolding(id);
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed");
+      toast.error(err instanceof Error ? err.message : "Delete failed");
     }
   }
 
@@ -151,12 +152,6 @@ export default function HoldingsPage() {
           <h1 className="text-2xl font-semibold text-slate-950">Holdings</h1>
           <p className="text-sm text-slate-600">Stocks you currently own.</p>
         </header>
-
-        {error ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        ) : null}
 
         <form
           onSubmit={handleSubmit}
@@ -203,11 +198,18 @@ export default function HoldingsPage() {
         </form>
 
         {loading ? (
-          <p className="text-sm text-slate-500">Loading holdings…</p>
+          <div className="space-y-2">
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
+          </div>
+        ) : error ? (
+          <EmptyState title="Couldn't load holdings" description={error} />
         ) : holdings.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-            No holdings yet. Add your first one above.
-          </p>
+          <EmptyState
+            title="No holdings yet"
+            description="Add your first holding using the form above."
+          />
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">

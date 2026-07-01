@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Toaster } from "sonner";
 import "./globals.css";
 import { TopNav } from "@/components/layout/TopNav";
 
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body>
         <TopNav />
         {children}
+        <Toaster richColors position="bottom-right" />
       </body>
     </html>
   );
