@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { MarkdownReport } from "@/components/reports/MarkdownReport";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { sendMessage, type ChatContextOptions } from "@/lib/api/chat";
 import { downloadText } from "@/lib/download";
 
@@ -16,9 +17,6 @@ function chatToMarkdown(messages: Msg[]): string {
   }
   return lines.join("\n");
 }
-
-const inputClass =
-  "h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -97,8 +95,8 @@ export default function ChatPage() {
             />
             Recent reports
           </label>
-          <input
-            className={`${inputClass} w-36`}
+          <Input
+            className="w-36"
             placeholder="Focus ticker"
             value={ctx.ticker ?? ""}
             onChange={(e) => setCtx((prev) => ({ ...prev, ticker: e.target.value || null }))}
@@ -133,13 +131,12 @@ export default function ChatPage() {
         </div>
 
         <form onSubmit={handleSend} className="flex items-center gap-2">
-          <input
-            className={inputClass}
+          <Input
             placeholder="Type a message…"
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
-          <Button type="submit" disabled={sending || !input.trim()}>
+          <Button type="submit" variant="primary" disabled={sending || !input.trim()}>
             Send
           </Button>
         </form>

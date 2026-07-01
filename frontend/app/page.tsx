@@ -4,7 +4,9 @@ import { Activity, Database, LineChart } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { getBackendHealth, type BackendHealth } from "@/lib/api/client";
 
 export default function DashboardPage() {
@@ -40,16 +42,16 @@ export default function DashboardPage() {
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <Card>
             <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700">
               <Activity className="h-4 w-4 text-emerald-700" aria-hidden="true" />
               Backend Health
             </div>
-            <p className="text-2xl font-semibold text-slate-950">{healthStatus}</p>
+            <Badge variant={healthFailed ? "danger" : "accent"}>{healthStatus}</Badge>
             <p className="mt-2 text-sm text-slate-500">{healthService}</p>
-          </div>
+          </Card>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <Card>
             <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700">
               <Database className="h-4 w-4 text-sky-700" aria-hidden="true" />
               Database
@@ -58,9 +60,9 @@ export default function DashboardPage() {
             <p className="mt-2 text-sm text-slate-500">
               Holdings, watchlist, reports, and chat are stored here.
             </p>
-          </div>
+          </Card>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <Card>
             <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700">
               <LineChart className="h-4 w-4 text-violet-700" aria-hidden="true" />
               Features
@@ -69,10 +71,10 @@ export default function DashboardPage() {
             <p className="mt-2 text-sm text-slate-500">
               Market data, news, AI reports, and chat are live.
             </p>
-          </div>
+          </Card>
         </section>
 
-        <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <Card className="p-6">
           <h2 className="text-lg font-semibold text-slate-950">Welcome</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
             Manage your holdings and watchlist, view live prices and charts, generate
@@ -81,13 +83,15 @@ export default function DashboardPage() {
           </p>
           <div className="mt-5 flex gap-2">
             <Link href="/reports">
-              <Button type="button">Generate a report</Button>
+              <Button type="button" variant="primary">
+                Generate a report
+              </Button>
             </Link>
             <Link href="/chat">
               <Button type="button">Open chat</Button>
             </Link>
           </div>
-        </section>
+        </Card>
       </div>
     </main>
   );

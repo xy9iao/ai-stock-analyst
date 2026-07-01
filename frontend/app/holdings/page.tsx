@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   createHolding,
   deleteHolding,
@@ -23,9 +24,6 @@ const EMPTY_FORM: HoldingInput = {
   company_name: "",
   sector: "",
 };
-
-const inputClass =
-  "h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400";
 
 // Display-only math: parse the Decimal strings to numbers just for rendering.
 // The backend stays the source of truth.
@@ -164,45 +162,40 @@ export default function HoldingsPage() {
           onSubmit={handleSubmit}
           className="grid gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2"
         >
-          <input
-            className={inputClass}
+          <Input
             placeholder="Ticker (e.g. NVDA)"
             value={form.ticker}
             onChange={(e) => setField("ticker", e.target.value)}
             required
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Company name (optional)"
             value={form.company_name ?? ""}
             onChange={(e) => setField("company_name", e.target.value)}
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Shares"
             value={form.shares}
             onChange={(e) => setField("shares", e.target.value)}
             required
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Average cost"
             value={form.average_cost}
             onChange={(e) => setField("average_cost", e.target.value)}
             required
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Sector (optional)"
             value={form.sector ?? ""}
             onChange={(e) => setField("sector", e.target.value)}
           />
           <div className="flex items-center gap-2">
-            <Button type="submit" disabled={submitting}>
+            <Button type="submit" variant="primary" disabled={submitting}>
               {editingId === null ? "Add holding" : "Save changes"}
             </Button>
             {editingId !== null ? (
-              <Button type="button" onClick={cancelEdit}>
+              <Button type="button" variant="ghost" onClick={cancelEdit}>
                 Cancel
               </Button>
             ) : null}
@@ -263,10 +256,20 @@ export default function HoldingsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
-                          <Button type="button" onClick={() => startEdit(holding)}>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEdit(holding)}
+                          >
                             Edit
                           </Button>
-                          <Button type="button" onClick={() => handleDelete(holding.id)}>
+                          <Button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDelete(holding.id)}
+                          >
                             Delete
                           </Button>
                         </div>

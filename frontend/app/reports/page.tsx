@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 import { MarkdownReport } from "@/components/reports/MarkdownReport";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   generateReport,
   listReports,
@@ -11,9 +13,6 @@ import {
   type ReportType,
 } from "@/lib/api/reports";
 import { downloadText, slugFilename } from "@/lib/download";
-
-const inputClass =
-  "h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400";
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
@@ -86,21 +85,21 @@ export default function ReportsPage() {
             Portfolio
           </Button>
           {reportType === "single_stock" ? (
-            <input
-              className={`${inputClass} w-44`}
+            <Input
+              className="w-44"
               placeholder="Ticker (e.g. NVDA)"
               value={ticker}
               onChange={(e) => setTicker(e.target.value)}
               required
             />
           ) : null}
-          <Button type="submit" disabled={generating}>
+          <Button type="submit" variant="primary" disabled={generating}>
             {generating ? "Generating… (~30s)" : "Generate report"}
           </Button>
         </form>
 
         {selected ? (
-          <article className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+          <Card className="p-6">
             <div className="mb-4 flex justify-end">
               <Button
                 type="button"
@@ -112,7 +111,7 @@ export default function ReportsPage() {
               </Button>
             </div>
             <MarkdownReport markdown={selected.content_markdown} />
-          </article>
+          </Card>
         ) : null}
 
         <section>
