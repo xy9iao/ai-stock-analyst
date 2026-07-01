@@ -3,8 +3,13 @@
 import { useEffect, useState } from "react";
 
 import Link from "next/link";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { InfoTip } from "@/components/ui/info-tip";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getQuote, type Quote } from "@/lib/api/market";
 import {
   createWatchlistItem,
@@ -22,9 +27,6 @@ const EMPTY_FORM: WatchlistItemInput = {
   sector: "",
   reason_to_watch: "",
 };
-
-const inputClass =
-  "h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400";
 
 export default function WatchlistPage() {
   const [items, setItems] = useState<WatchlistItem[]>([]);
@@ -95,7 +97,6 @@ export default function WatchlistPage() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setSubmitting(true);
-    setError(null);
     try {
       if (editingId === null) {
         await createWatchlistItem(form);
@@ -105,19 +106,18 @@ export default function WatchlistPage() {
       cancelEdit();
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      toast.error(err instanceof Error ? err.message : "Save failed");
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleDelete(id: number) {
-    setError(null);
     try {
       await deleteWatchlistItem(id);
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed");
+      toast.error(err instanceof Error ? err.message : "Delete failed");
     }
   }
 
@@ -133,47 +133,37 @@ export default function WatchlistPage() {
           <p className="text-sm text-slate-600">Stocks you are keeping an eye on.</p>
         </header>
 
-        {error ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        ) : null}
-
         <form
           onSubmit={handleSubmit}
           className="grid gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2"
         >
-          <input
-            className={inputClass}
+          <Input
             placeholder="Ticker (e.g. NVDA)"
             value={form.ticker}
             onChange={(e) => setField("ticker", e.target.value)}
             required
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Company name (optional)"
             value={form.company_name ?? ""}
             onChange={(e) => setField("company_name", e.target.value)}
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Sector (optional)"
             value={form.sector ?? ""}
             onChange={(e) => setField("sector", e.target.value)}
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Reason to watch (optional)"
             value={form.reason_to_watch ?? ""}
             onChange={(e) => setField("reason_to_watch", e.target.value)}
           />
           <div className="flex items-center gap-2">
-            <Button type="submit" disabled={submitting}>
+            <Button type="submit" variant="primary" disabled={submitting}>
               {editingId === null ? "Add to watchlist" : "Save changes"}
             </Button>
             {editingId !== null ? (
-              <Button type="button" onClick={cancelEdit}>
+              <Button type="button" variant="ghost" onClick={cancelEdit}>
                 Cancel
               </Button>
             ) : null}
@@ -181,11 +171,15 @@ export default function WatchlistPage() {
         </form>
 
         {loading ? (
-          <p className="text-sm text-slate-500">Loading watchlist…</p>
+          <div className="space-y-2">
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
+          </div>
+        ) : error ? (
+          <EmptyState title="Couldn't load watchlist" description={error} />
         ) : items.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-            Nothing on your watchlist yet. Add a ticker above.
-          </p>
+          <EmptyState title="Nothing on your watchlist yet" description="Add a ticker above." />
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
@@ -196,7 +190,9 @@ export default function WatchlistPage() {
                   <th className="px-4 py-3 font-medium">Sector</th>
                   <th className="px-4 py-3 font-medium">Reason to watch</th>
                   <th className="px-4 py-3 font-medium">Price</th>
-                  <th className="px-4 py-3 font-medium">Day %</th>
+                  <th className="px-4 py-3 font-medium">
+                    <InfoTip label="Day %">Change in the price so far today.</InfoTip>
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
@@ -225,10 +221,20 @@ export default function WatchlistPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
-                          <Button type="button" onClick={() => startEdit(item)}>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEdit(item)}
+                          >
                             Edit
                           </Button>
-                          <Button type="button" onClick={() => handleDelete(item.id)}>
+                          <Button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDelete(item.id)}
+                          >
                             Delete
                           </Button>
                         </div>

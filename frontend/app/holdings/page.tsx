@@ -3,8 +3,13 @@
 import { useEffect, useState } from "react";
 
 import Link from "next/link";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { InfoTip } from "@/components/ui/info-tip";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   createHolding,
   deleteHolding,
@@ -23,9 +28,6 @@ const EMPTY_FORM: HoldingInput = {
   company_name: "",
   sector: "",
 };
-
-const inputClass =
-  "h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400";
 
 // Display-only math: parse the Decimal strings to numbers just for rendering.
 // The backend stays the source of truth.
@@ -116,7 +118,6 @@ export default function HoldingsPage() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setSubmitting(true);
-    setError(null);
     try {
       if (editingId === null) {
         await createHolding(form);
@@ -126,19 +127,18 @@ export default function HoldingsPage() {
       cancelEdit();
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      toast.error(err instanceof Error ? err.message : "Save failed");
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleDelete(id: number) {
-    setError(null);
     try {
       await deleteHolding(id);
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed");
+      toast.error(err instanceof Error ? err.message : "Delete failed");
     }
   }
 
@@ -154,55 +154,44 @@ export default function HoldingsPage() {
           <p className="text-sm text-slate-600">Stocks you currently own.</p>
         </header>
 
-        {error ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        ) : null}
-
         <form
           onSubmit={handleSubmit}
           className="grid gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2"
         >
-          <input
-            className={inputClass}
+          <Input
             placeholder="Ticker (e.g. NVDA)"
             value={form.ticker}
             onChange={(e) => setField("ticker", e.target.value)}
             required
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Company name (optional)"
             value={form.company_name ?? ""}
             onChange={(e) => setField("company_name", e.target.value)}
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Shares"
             value={form.shares}
             onChange={(e) => setField("shares", e.target.value)}
             required
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Average cost"
             value={form.average_cost}
             onChange={(e) => setField("average_cost", e.target.value)}
             required
           />
-          <input
-            className={inputClass}
+          <Input
             placeholder="Sector (optional)"
             value={form.sector ?? ""}
             onChange={(e) => setField("sector", e.target.value)}
           />
           <div className="flex items-center gap-2">
-            <Button type="submit" disabled={submitting}>
+            <Button type="submit" variant="primary" disabled={submitting}>
               {editingId === null ? "Add holding" : "Save changes"}
             </Button>
             {editingId !== null ? (
-              <Button type="button" onClick={cancelEdit}>
+              <Button type="button" variant="ghost" onClick={cancelEdit}>
                 Cancel
               </Button>
             ) : null}
@@ -210,11 +199,18 @@ export default function HoldingsPage() {
         </form>
 
         {loading ? (
-          <p className="text-sm text-slate-500">Loading holdings…</p>
+          <div className="space-y-2">
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
+          </div>
+        ) : error ? (
+          <EmptyState title="Couldn't load holdings" description={error} />
         ) : holdings.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-            No holdings yet. Add your first one above.
-          </p>
+          <EmptyState
+            title="No holdings yet"
+            description="Add your first holding using the form above."
+          />
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
             <table className="w-full text-left text-sm">
@@ -223,11 +219,23 @@ export default function HoldingsPage() {
                   <th className="px-4 py-3 font-medium">Ticker</th>
                   <th className="px-4 py-3 font-medium">Company</th>
                   <th className="px-4 py-3 font-medium">Shares</th>
-                  <th className="px-4 py-3 font-medium">Avg cost</th>
+                  <th className="px-4 py-3 font-medium">
+                    <InfoTip label="Avg cost">Your average purchase price per share.</InfoTip>
+                  </th>
                   <th className="px-4 py-3 font-medium">Price</th>
-                  <th className="px-4 py-3 font-medium">Day %</th>
-                  <th className="px-4 py-3 font-medium">Value</th>
-                  <th className="px-4 py-3 font-medium">Gain/Loss</th>
+                  <th className="px-4 py-3 font-medium">
+                    <InfoTip label="Day %">Change in the price so far today.</InfoTip>
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    <InfoTip label="Value">
+                      Shares × current price — what the position is worth now.
+                    </InfoTip>
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    <InfoTip label="Gain/Loss">
+                      Percent change from your average cost to the current price.
+                    </InfoTip>
+                  </th>
                   <th className="px-4 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
@@ -263,10 +271,20 @@ export default function HoldingsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
-                          <Button type="button" onClick={() => startEdit(holding)}>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEdit(holding)}
+                          >
                             Edit
                           </Button>
-                          <Button type="button" onClick={() => handleDelete(holding.id)}>
+                          <Button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDelete(holding.id)}
+                          >
                             Delete
                           </Button>
                         </div>

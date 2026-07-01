@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+import { toast } from "sonner";
+
 import { MarkdownReport } from "@/components/reports/MarkdownReport";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   generateReport,
   listReports,
@@ -11,9 +17,6 @@ import {
   type ReportType,
 } from "@/lib/api/reports";
 import { downloadText, slugFilename } from "@/lib/download";
-
-const inputClass =
-  "h-10 w-full rounded-md border border-slate-300 px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400";
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
@@ -26,6 +29,7 @@ export default function ReportsPage() {
   async function refresh() {
     try {
       setReports(await listReports());
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load reports");
     }
@@ -38,7 +42,6 @@ export default function ReportsPage() {
   async function handleGenerate(event: React.FormEvent) {
     event.preventDefault();
     setGenerating(true);
-    setError(null);
     try {
       const report = await generateReport({
         report_type: reportType,
@@ -47,7 +50,7 @@ export default function ReportsPage() {
       setSelected(report);
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Generation failed");
+      toast.error(err instanceof Error ? err.message : "Generation failed");
     } finally {
       setGenerating(false);
     }
@@ -60,12 +63,6 @@ export default function ReportsPage() {
           <h1 className="text-2xl font-semibold text-slate-950">AI Reports</h1>
           <p className="text-sm text-slate-600">Generate an AI research report.</p>
         </header>
-
-        {error ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        ) : null}
 
         <form
           onSubmit={handleGenerate}
@@ -86,21 +83,30 @@ export default function ReportsPage() {
             Portfolio
           </Button>
           {reportType === "single_stock" ? (
-            <input
-              className={`${inputClass} w-44`}
+            <Input
+              className="w-44"
               placeholder="Ticker (e.g. NVDA)"
               value={ticker}
               onChange={(e) => setTicker(e.target.value)}
               required
             />
           ) : null}
-          <Button type="submit" disabled={generating}>
+          <Button type="submit" variant="primary" disabled={generating}>
             {generating ? "Generating… (~30s)" : "Generate report"}
           </Button>
         </form>
 
-        {selected ? (
-          <article className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        {generating ? (
+          <Card className="p-6">
+            <div className="space-y-3">
+              <Skeleton className="h-6 w-2/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </div>
+          </Card>
+        ) : selected ? (
+          <Card className="p-6">
             <div className="mb-4 flex justify-end">
               <Button
                 type="button"
@@ -112,13 +118,15 @@ export default function ReportsPage() {
               </Button>
             </div>
             <MarkdownReport markdown={selected.content_markdown} />
-          </article>
+          </Card>
         ) : null}
 
         <section>
           <h2 className="mb-2 text-sm font-medium text-slate-500">Past reports</h2>
-          {reports.length === 0 ? (
-            <p className="text-sm text-slate-500">No reports yet.</p>
+          {error ? (
+            <EmptyState title="Couldn't load reports" description={error} />
+          ) : reports.length === 0 ? (
+            <EmptyState title="No reports yet" description="Generate your first report above." />
           ) : (
             <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white shadow-sm">
               {reports.map((report) => (

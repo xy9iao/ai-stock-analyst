@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 
 import { StockPriceChart } from "@/components/charts/StockPriceChart";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getPriceHistory,
   getQuote,
@@ -66,12 +68,6 @@ export default function StockDetailPage() {
           </Link>
         </div>
 
-        {error ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        ) : null}
-
         {quote ? (
           <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
             <span className="text-3xl font-semibold text-slate-950">
@@ -101,7 +97,9 @@ export default function StockDetailPage() {
         </div>
 
         {loading ? (
-          <p className="text-sm text-slate-500">Loading chart…</p>
+          <Skeleton className="h-72 w-full" />
+        ) : error ? (
+          <EmptyState title="Couldn't load market data" description={error} />
         ) : history ? (
           <StockPriceChart candles={history.candles} range={range} />
         ) : null}

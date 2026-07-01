@@ -1,107 +1,28 @@
-"use client";
-
-import { Activity, Database, LineChart } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { getBackendHealth, type BackendHealth } from "@/lib/api/client";
+import { Card } from "@/components/ui/card";
 
-export default function DashboardPage() {
-  const [health, setHealth] = useState<BackendHealth | null>(null);
-  const [healthFailed, setHealthFailed] = useState(false);
-
-  useEffect(() => {
-    getBackendHealth()
-      .then(setHealth)
-      .catch(() => setHealthFailed(true));
-  }, []);
-
-  const healthStatus = healthFailed ? "error" : (health?.status ?? "…");
-  const healthService = healthFailed
-    ? "Backend is not reachable"
-    : (health?.service ?? "Checking…");
-
+export default function HomePage() {
   return (
     <main className="min-h-screen px-6 py-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
-        <header className="flex flex-col gap-3 border-b border-slate-200 pb-6">
-          <div className="flex items-center gap-3">
-            <LineChart className="h-8 w-8 text-emerald-700" aria-hidden="true" />
-            <div>
-              <h1 className="text-3xl font-semibold tracking-normal text-slate-950">
-                AI Stock Analyst
-              </h1>
-              <p className="text-sm text-slate-600">
-                Local-first investment research dashboard
-              </p>
-            </div>
-          </div>
-          <nav className="flex gap-4 text-sm font-medium text-slate-700">
-            <Link href="/holdings" className="hover:text-emerald-700">
-              Holdings
-            </Link>
-            <Link href="/watchlist" className="hover:text-emerald-700">
-              Watchlist
-            </Link>
-            <Link href="/reports" className="hover:text-emerald-700">
-              Reports
-            </Link>
-            <Link href="/chat" className="hover:text-emerald-700">
-              Chat
-            </Link>
-          </nav>
-        </header>
-
-        <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700">
-              <Activity className="h-4 w-4 text-emerald-700" aria-hidden="true" />
-              Backend Health
-            </div>
-            <p className="text-2xl font-semibold text-slate-950">{healthStatus}</p>
-            <p className="mt-2 text-sm text-slate-500">{healthService}</p>
-          </div>
-
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700">
-              <Database className="h-4 w-4 text-sky-700" aria-hidden="true" />
-              Database
-            </div>
-            <p className="text-2xl font-semibold text-slate-950">PostgreSQL</p>
-            <p className="mt-2 text-sm text-slate-500">
-              Holdings, watchlist, reports, and chat are stored here.
-            </p>
-          </div>
-
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700">
-              <LineChart className="h-4 w-4 text-violet-700" aria-hidden="true" />
-              Features
-            </div>
-            <p className="text-2xl font-semibold text-slate-950">MVP</p>
-            <p className="mt-2 text-sm text-slate-500">
-              Market data, news, AI reports, and chat are live.
-            </p>
-          </div>
-        </section>
-
-        <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-950">Welcome</h2>
+        <Card className="p-6">
+          <h1 className="text-2xl font-semibold text-slate-950">Welcome to AI Stock Analyst</h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-            Manage your holdings and watchlist, view live prices and charts, generate
-            AI research reports, and chat with an investment assistant — all from the
-            navigation above.
+            A local-first assistant for stock research — track your holdings and watchlist, view
+            live prices and charts, generate AI research reports, and chat with an investment
+            assistant. Use the navigation above to get started.
           </p>
           <div className="mt-5 flex gap-2">
             <Link href="/reports">
-              <Button type="button">Generate a report</Button>
+              <Button variant="primary">Generate a report</Button>
             </Link>
             <Link href="/chat">
-              <Button type="button">Open chat</Button>
+              <Button>Open chat</Button>
             </Link>
           </div>
-        </section>
+        </Card>
       </div>
     </main>
   );

@@ -161,6 +161,16 @@ Need to decide:
 - Risk display
 - Whether action labels should appear in tables
 
+### Q29: What should the Home (root) page show?
+
+Decided (2026-07-01): the root page is **Home**, not a "Dashboard" — a real personalized dashboard is deferred until user accounts exist (see Q19). The dev/system-status cards (backend health / database / features) were removed from root, since they are developer status, not user content. MVP now: Home shows only a single welcome notice.
+
+Deferred design (tracked as a GitHub issue): Home should surface **news** and a **financials** snapshot for the user's tracked tickers (holdings + watchlist), since both endpoints are per-ticker (`GET /api/news/{ticker}`, `GET /api/financials/{ticker}`). Open sub-questions:
+
+- Content source: holdings + watchlist tickers, or a fixed set?
+- Whether financials belong on Home or only on the stock detail page.
+- How to aggregate/rank news across multiple tickers.
+
 ---
 
 ## 5. Backend and Architecture Questions
