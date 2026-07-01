@@ -4,11 +4,10 @@ Single source of truth for project progress and the **current phase's** detailed
 
 ## Current Status
 
-- **Status: MVP complete** — backend + frontend cover every feature.
-- **Completed: Phase 0 – Phase 7**, plus the MVP frontend (reports + chat pages) and one-command Docker dev (PR #10).
-- **Next: Phase 8 — Export & Logging** (the numbered roadmap resumes here).
+- **Active: Phase 8 — Export** (Markdown export of reports + chat; frontend-only).
+- **Completed: Phase 0 – Phase 7**, plus the MVP frontend (reports + chat pages), one-command Docker dev (PR #10), and the lint fix (PR #11, closed #2).
 
-The **MVP is done**: holdings/watchlist, market data, news/financials, AI reports, and chat — all reachable from the frontend, with `docker compose up --build` running the whole stack. Remaining phases are polish/infra.
+The **MVP is done**: holdings/watchlist, market data, news/financials, AI reports, and chat — all reachable from the frontend, with `docker compose up --build` running the whole stack. **Phase 8** adds Markdown export (Obsidian-friendly) for reports and chat conversations as a browser download — no backend, since reports are already stored as Markdown. The "daily log / logging" idea is deferred. Remaining phases are polish/infra.
 
 ## Phase Overview
 
@@ -20,11 +19,34 @@ The **MVP is done**: holdings/watchlist, market data, news/financials, AI report
 - [x] **Phase 5 — News and Financial Data Integration**
 - [x] **Phase 6 — AI Report Generation**
 - [x] **Phase 7 — Chat Module**
-- [ ] **Phase 8 — Export and Logging**
+- [ ] **Phase 8 — Export and Logging**  ← current
 - [ ] **Phase 9 — UI Polish and Beginner Experience**
 - [ ] **Phase 10 — Testing and Quality**
 - [ ] **Phase 11 — README and Public Repo Documentation**
 - [ ] **Phase 12 — Future Deployment Preparation**
+
+## Phase 8 Detail (active)
+
+### Goal
+
+Let the user save AI **reports** and **chat conversations** as Markdown files (Obsidian-friendly), fulfilling the roadmap's "export button." Reports are already stored as Markdown and delivered to the frontend, so export is a pure client-side browser download — **no backend endpoint, no new model/migration.**
+
+### In Scope
+
+- `frontend/lib/download.ts` — `downloadText(filename, text)` (Blob → anchor download) + `slugFilename(title)`.
+- Reports page: a **Download .md** button on the open report → saves `content_markdown` as `<title-slug>.md`.
+- Chat page: an **Export** button (disabled when empty) → renders the conversation to Markdown (`**You:** / **Assistant:**`) → `chat.md`.
+
+### Out of Scope
+
+- Backend export endpoints — unnecessary; the data is already Markdown on the client.
+- The "daily log / logging" idea — **deferred** (underspecified, low MVP value).
+- PDF/other formats, bulk export, server-side file storage.
+
+### Verify
+
+- `pnpm typecheck` + `pnpm lint` + `pnpm build` all clean.
+- Manually: open a report → **Download .md** saves it; send a chat message → **Export** saves the transcript.
 
 ## Phase 3 Detail (completed — merged in PR #3, 2026-06-25)
 
