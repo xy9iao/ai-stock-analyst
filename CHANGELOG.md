@@ -1,6 +1,14 @@
 # Changelog
 
-Build history by phase. The active phase and its detailed scope live in `docs/roadmap.md`; this file is the frozen record of what was completed. Per the Per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
+Build history by phase — the **accurate, frozen record** of what was actually built, newest first. The active phase lives in `docs/roadmap.md`. Per the per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
+
+**v0 at a glance (June – July 2026):** Phases 0–11 delivered a local-first AI stock research assistant — holdings/watchlist CRUD → market data (provider abstraction + cache) → news/financials → AI reports (single LLM gateway, compact context injection) → multi-turn chat → Markdown export → UI polish/design system → test suites (43 backend + 28 frontend) → the public README. Plus off-roadmap: one-command Docker dev, the frontend MVP UI, ESLint/CI hardening. v0 was declared **feature-frozen on 2026-07-02**; Phase 12 (deploy-prep) remains.
+
+## v0 docs freeze (2026-07-02)
+
+- Built: the documentation freeze marking v0 feature-complete. Removed the fully-absorbed `docs/archive/` (6 files; provenance in git history); synced all guides to the as-built v0 state (backend/database guides de-phased, workflow guide gained the two-loop dev pattern + current CI gates); added **v0 outcome notes across `docs/planning/`** (requirements shipped/deferred map, user-story acceptance criteria ticked — verdict: met, decisions 001–008 all held, open questions Q1–Q29 resolutions recorded, architecture models-centralization deviation noted); rewrote `docs/roadmap.md` as a dense phase-summary table with verified PR links; updated `CLAUDE.md` to the frozen-v0 reality; committed the four README screenshots.
+- Files: `docs/` (archive removed, README/roadmap/guides/planning updated), `CHANGELOG.md`, `CLAUDE.md`, `docs/images/*.png`.
+- Key decisions: CHANGELOG stays the accurate historical record (entries untouched); roadmap becomes lean/forward-looking (per-phase detail lives here); `docs/planning/` is the venue for next-version (agent-focused) planning.
 
 ## Phase 11 — README & Public Repo Documentation (done 2026-07-02)
 
