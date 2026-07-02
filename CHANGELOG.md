@@ -2,6 +2,12 @@
 
 Build history by phase. The active phase and its detailed scope live in `docs/roadmap.md`; this file is the frozen record of what was completed. Per the Per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
 
+## Phase 10 — Testing & Quality (done 2026-07-02)
+
+- Built: closed the frontend testing gap (the backend already had 43 pytest tests; the frontend had none). Added **Vitest + React Testing Library** (jsdom) — 28 tests covering the pure utils (`format`, `download`), the **API boundary** (`lib/api` with a mocked `fetch` — endpoint/method, error-message extraction, 204 handling), the shared **components** (`Button` variants, `EmptyState`), and a **`HoldingsPage` four-state integration test** (loading / load-error / empty / data via mocked `lib/api`). Wired `pnpm test` into CI. Backend: added **`pytest-cov`** — coverage is now measured on every run (77% total) but **not gated**.
+- Files: `frontend/vitest.config.ts` + `vitest.setup.ts`, `frontend/package.json` (`test` scripts + dev deps), `frontend/{lib/format,lib/download,lib/api/client,lib/api/holdings}.test.ts(x)`, `frontend/components/ui/{button,empty-state}.test.tsx`, `frontend/app/holdings/page.test.tsx`; `backend/pyproject.toml` (`pytest-cov` + coverage `addopts`) + `uv.lock`; `.github/workflows/ci.yml` (frontend test step); docs (`docs/guides/frontend.md`, `docs/roadmap.md`).
+- Key decisions: **Vitest + RTL** over Jest (modern/fast); **E2E deferred** to #16 (unit/component first); **coverage measured, not gated** (no `--cov-fail-under` — avoids flaky friction on a young suite); page tests wrap renders in `TooltipProvider` and mock `next/link`.
+
 ## Phase 9 — UI Polish & Beginner Experience (done 2026-07-01)
 
 - Built: turned the six functional-but-plain pages into one cohesive, beginner-friendly app. **Shared top-nav shell** (`TopNav` in `layout.tsx`, active-route emerald pill; on mobile it collapses to a logo-toggled dropdown menu). **Design system** — `cva` `Button` variants (primary/secondary/ghost/danger) plus `Card`, `Input`, `Badge`, extracted from repeated inline styles; slate/emerald refined. **States** — `Skeleton` loaders, `EmptyState`, and a **four-state data pattern** (loading/load-error/empty/data), with action failures moved to **`sonner` toasts** (replacing inline red boxes). **Beginner UX** — radix **tooltips** (`InfoTip` ⓘ) explaining Avg cost / Day % / Value / Gain/Loss + the chat Context toggle, and a persistent **"research, not financial advice" footer**. Responsive pass (mobile nav). New frontend guide.
