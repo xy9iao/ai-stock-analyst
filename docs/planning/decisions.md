@@ -1,3 +1,5 @@
+> **v0 Outcome (2026-07-02).** All eight decisions below held through v0 unchanged: Obsidian→repo docs, React+FastAPI+PostgreSQL+Docker, modular monolith, AI inside the backend (`modules/ai/`), PostgreSQL, local-first with deploy-ready design, provider abstraction (yfinance in v0), analysis-only (no trade execution).
+
 ## 1. Purpose
 
 This document records important project decisions and the reasoning behind them.

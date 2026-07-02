@@ -1,3 +1,5 @@
+> **v0 Outcome (2026-07-02).** Built as designed — modular monolith, backend owns all external access, router→service→repository layering. **One deviation:** SQLAlchemy models are centralized in `backend/app/models/` (one file per table), *not* per-module as sketched below. Read this document for intent; the guides in `docs/guides/` describe the code as it exists.
+
 ## 1. Purpose
 
 This document defines the initial system architecture for the MVP version of AI Stock Analyst.

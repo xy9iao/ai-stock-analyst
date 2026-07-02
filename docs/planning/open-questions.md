@@ -1,3 +1,23 @@
+> **v0 Resolutions (2026-07-02).** How each question landed during v0 — details in `CHANGELOG.md` and `docs/guides/`:
+>
+> - **Q1/Q2 provider:** yfinance for all of v0, behind the provider abstraction (swap is config + one class).
+> - **Q3 refresh:** cache-aside in Postgres — quotes ~2 min, news ~15 min, financials ~1 day.
+> - **Q4 news volume:** ≤4 headlines per ticker, headline-level only, no URLs in prompts.
+> - **Q5 snapshot fields:** market cap, revenue (+growth), EPS, net income, margins, earnings dates.
+> - **Q7/Q8 UI:** Tailwind + local shadcn-style components; Recharts.
+> - **Q9 reports placement:** Reports is a main nav page.
+> - **Q10 action labels:** guidance appears in report prose; structured UI labels/colors deferred.
+> - **Q11/Q12 ORM:** sync SQLAlchemy 2.x (+ Pydantic v2 + Alembic).
+> - **Q13 Redis:** not added — Postgres caching was enough.
+> - **Q14 report generation:** synchronous request/response.
+> - **Q15 report storage:** Markdown only.
+> - **Q16/Q17 RAG & agents:** stayed out of v0 — the headline candidates for the next version.
+> - **Q18 LLM:** DeepSeek (`deepseek-v4-flash`) via the OpenAI-compatible SDK.
+> - **Q23/Q24 export:** Markdown export for reports + chat; the daily-log idea stayed deferred.
+> - **Q27/Q28 docs:** README overhauled (Phase 11); Obsidian notes became `docs/planning/` + `docs/guides/`.
+> - **Q29 Home page:** minimal welcome page; news/financials Home is issue #14.
+> - **Still open (next-version questions):** Q6 (transcripts), Q19 (accounts), Q20 (onboarding), Q21 (modes), Q22 (bilingual), Q25/Q26 (deployment & key management — Phase 12 territory).
+
 ## 1. Purpose
 
 This document records unresolved questions for the AI Stock Analyst project.
