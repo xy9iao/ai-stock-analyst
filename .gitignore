@@ -28,3 +28,9 @@ pnpm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Local Claude Code config
+.claude/
+
+# Vitest coverage output
+frontend/coverage/

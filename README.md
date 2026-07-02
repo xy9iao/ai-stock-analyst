@@ -1,188 +1,157 @@
 # AI Stock Analyst
 
-AI Stock Analyst is a local-first AI-powered stock research assistant. Version 0 starts with a professional full-stack foundation and grows toward holdings, watchlist, market data, AI reports, and chat in later phases.
+[![CI](https://github.com/xy9iao/ai-stock-analyst/actions/workflows/ci.yml/badge.svg)](https://github.com/xy9iao/ai-stock-analyst/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=nextdotjs)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
 
-This project is for investment research and decision support only. It is not a trading bot, brokerage app, real-money execution system, or guaranteed financial advice tool.
+A **local-first, AI-powered stock research assistant** — track your holdings and watchlist, pull live market data and news, generate AI research reports, and chat with an investment assistant that knows your portfolio. Full-stack: FastAPI + PostgreSQL backend, Next.js frontend, one-command Docker dev environment.
 
-## Current Status
+> **Disclaimer:** This project is for **research and educational use only** — it is not a trading bot, brokerage app, or financial advice. Market data may be delayed or inaccurate; verify independently before making decisions.
 
-**MVP complete.** All core features are built end to end — backend *and* frontend:
+## Screenshots
 
-- **Holdings & Watchlist** — manual CRUD with validation.
-- **Market data** — live quotes, daily change, and price/volume charts (yfinance behind a provider abstraction, cached).
-- **News & financials** — company news and compact financial snapshots.
-- **AI reports** — single-stock and portfolio research reports (DeepSeek; Markdown, stored).
-- **Chat** — an investment-focused assistant with toggleable context injection.
+| Holdings | Stock detail |
+| --- | --- |
+| ![Holdings — portfolio table with live prices and gain/loss](docs/images/holdings.png) | ![Stock detail — price chart with range switching](docs/images/stock-detail.png) |
 
-Run the whole stack with one command: `docker compose up --build` (see [Docker Compose](#docker-compose-one-command)).
+| AI report | Chat |
+| --- | --- |
+| ![AI report — generated Markdown research report](docs/images/reports.png) | ![Chat — assistant with portfolio context toggles](docs/images/chat.png) |
 
-The remaining roadmap is polish/infra — Export, UI polish, testing, README, deploy-prep. See [Roadmap & Progress](docs/roadmap.md) and the [CHANGELOG](CHANGELOG.md) for detail.
+## Features
 
-Project docs:
+- **Holdings & watchlist** — CRUD with validation; live prices, day change, market value, and gain/loss per position.
+- **Market data** — quotes and price/volume charts (1d / 1w / 1m / 1y) via a swappable provider abstraction (yfinance today), cached in Postgres.
+- **News & financials** — company headlines and compact financial snapshots, used as context for AI analysis.
+- **AI reports** — single-stock and portfolio research reports: the backend assembles a compact context from your data, calls the LLM (DeepSeek, OpenAI-compatible), and stores the result as Markdown — exportable with one click.
+- **Chat** — a multi-turn investment assistant with **toggleable context injection** (holdings / watchlist / a focus ticker / recent reports), so you control exactly what the model sees.
+- **Beginner-friendly UI** — finance-term tooltips, loading/empty/error states, responsive layout, and a persistent not-financial-advice notice.
 
-- [Roadmap & Progress](docs/roadmap.md)
-- [Backend Guide](docs/guides/backend.md) · [API Guide](docs/guides/api.md) · [Database Guide](docs/guides/database.md)
-- [Development Workflow](docs/guides/development-workflow.md)
+## Architecture
+
+A **modular monolith**: the backend owns everything external (database, market/news APIs, the LLM, all secrets); the frontend is presentation-only and talks to nothing but the backend REST API.
+
+```mermaid
+graph LR
+  B[Browser] --> FE["Next.js 15 frontend<br/>:3000"]
+  FE -->|"REST /api<br/>(same-origin proxy)"| BE["FastAPI backend :8000<br/>modules: router → service → repository"]
+  BE --> DB[("PostgreSQL<br/>holdings · reports · chat · cache")]
+  BE -->|"provider abstraction<br/>+ cache-aside"| EXT["yfinance<br/>market · news · financials"]
+  BE -->|"modules/ai only"| LLM["DeepSeek LLM<br/>(OpenAI-compatible)"]
+```
+
+Key design decisions:
+
+- **Layered modules** — each business area is `backend/app/modules/<name>/` with `router → service → repository` + Pydantic schemas; modules call each other in Python, never over HTTP.
+- **Provider abstraction** — market/news/financial sources are `typing.Protocol` interfaces with config-selected implementations, so yfinance can be swapped for a paid API without touching business logic.
+- **One LLM gateway** — every LLM call routes through `modules/ai/llm_client.py`: one place for prompt safety boundaries, model switching, and cost control.
+- **Compact context injection** — the LLM receives small, curated context blocks built from Postgres (never raw API payloads or full articles). RAG/agent workflows are deliberately deferred to keep v0 explainable.
+- **AI report data flow:** request → load holdings/watchlist from DB → fetch cached market/news → `prompt_builder` assembles compact context → `llm_client` calls the LLM → Markdown saved to `reports` → rendered in the frontend.
+
+More depth in the guides: [Backend](docs/guides/backend.md) · [API](docs/guides/api.md) · [Database](docs/guides/database.md) · [Frontend & design system](docs/guides/frontend.md) · [Development workflow](docs/guides/development-workflow.md)
 
 ## Tech Stack
 
-Backend:
+| Layer | Technologies |
+| --- | --- |
+| Backend | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2 (sync), Alembic, psycopg 3, managed by `uv` |
+| Frontend | Next.js 15 (App Router), React 19, TypeScript (strict), Tailwind CSS, shadcn-style components, `pnpm` |
+| AI | DeepSeek via the OpenAI-compatible SDK — centralized in one backend module |
+| Data | PostgreSQL 16, yfinance behind a provider abstraction, Postgres-backed cache |
+| Testing | pytest + pytest-cov (43 backend tests), Vitest + React Testing Library (28 frontend tests) |
+| Tooling / CI | Ruff, ESLint 9, GitHub Actions, Docker Compose |
 
-- Python 3.12+
-- uv
-- FastAPI
-- Pydantic v2
-- pydantic-settings
-- SQLAlchemy 2.x sync style
-- Alembic
-- psycopg 3
-- pytest
-- Ruff
+## Getting Started
 
-Frontend:
+### Prerequisites
 
-- Next.js App Router
-- React
-- TypeScript
-- pnpm
-- Tailwind CSS
-- shadcn/ui-style local components
-- lucide-react
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (the only hard requirement for the quick start)
+- A [DeepSeek API key](https://platform.deepseek.com/) — optional; only needed for AI reports and chat
 
-Infrastructure:
-
-- PostgreSQL
-- Docker Compose
-- GitHub Actions CI
-
-## Local Setup
-
-Clone the repository:
+### Quick start (one command)
 
 ```bash
 git clone https://github.com/xy9iao/ai-stock-analyst.git
 cd ai-stock-analyst
-```
-
-Install required tools:
-
-```bash
-brew install uv
-corepack enable
-corepack prepare pnpm@11.6.0 --activate
-```
-
-Copy environment variables:
-
-```bash
-cp .env.example .env
-```
-
-The `.env` file is local only. Do not commit real secrets.
-
-## Docker Compose (one command)
-
-Start the whole stack — Postgres, backend, and frontend — with a single command, identical on macOS and Windows:
-
-```bash
+cp .env.example .env        # add LLM_API_KEY=... for AI features (optional)
 docker compose up --build
 ```
 
 This builds the images, **runs database migrations automatically**, and starts:
 
 - Frontend: http://localhost:3000
-- Backend: http://localhost:8000 (health: http://localhost:8000/api/health)
+- Backend: http://localhost:8000 (health check: http://localhost:8000/api/health)
 - PostgreSQL: localhost:5432
 
-The frontend reaches the backend through a same-origin `/api` proxy (a Next.js rewrite), so client-side pages work with no extra config. For AI **reports and chat**, put your DeepSeek key in the root `.env` (`LLM_API_KEY=...`); the backend container reads it automatically (without it the app still runs, but reports/chat return 503).
+Without an LLM key the app still runs — holdings, watchlist, market data, and charts all work; reports and chat return an error until a key is set. Never commit your real `.env`.
 
-Stop with `Ctrl+C` (or `docker compose down`). Ports 3000 / 8000 / 5432 must be free first.
+### Local development (hot reload)
 
-## Backend Commands
-
-Run commands from `backend/`:
+Docker images are frozen snapshots — for day-to-day coding, run the data layer in Docker and the frontend natively:
 
 ```bash
-cd backend
-uv sync
-uv run uvicorn app.main:app --reload
-uv run pytest
-uv run ruff check .
-uv run ruff format .
+docker compose up postgres backend    # database + API
+cd frontend && pnpm install && pnpm dev   # :3000 with hot reload, /api proxied to :8000
 ```
 
-Alembic migration commands:
+Or run the backend natively too (requires [uv](https://docs.astral.sh/uv/) and Node 20+ with corepack/pnpm):
 
 ```bash
-uv run alembic upgrade head
-uv run alembic downgrade -1
-uv run alembic revision --autogenerate -m "describe change"
+cd backend && uv sync && uv run alembic upgrade head && uv run uvicorn app.main:app --reload
 ```
 
-## Frontend Commands
-
-Run commands from `frontend/`:
+## Development
 
 ```bash
-cd frontend
-pnpm install
-pnpm dev
-pnpm typecheck
-pnpm build
+# Backend (from backend/)
+uv run pytest                  # tests + coverage report
+uv run ruff check .            # lint
+uv run alembic revision --autogenerate -m "..."   # new migration after model changes
+
+# Frontend (from frontend/)
+pnpm test                      # Vitest suite
+pnpm typecheck && pnpm lint && pnpm build
 ```
 
-## Environment Variables
+CI (GitHub Actions) enforces exactly these gates on every push/PR: backend **ruff + pytest**; frontend **typecheck + lint + test + build**.
 
-See `.env.example`.
+## Project Structure
 
-Important variables:
-
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-- `POSTGRES_DB`
-- `DATABASE_URL`
-- `BACKEND_CORS_ORIGINS`
-- `LLM_BASE_URL`
-- `LLM_API_KEY`
-- `LLM_MODEL`
-- `NEXT_PUBLIC_API_BASE_URL`
-
-In Docker Compose, the frontend uses `http://backend:8000` to reach the backend container. In local browser development, use `http://localhost:8000`.
-
-## Git and GitHub Workflow
-
-Use small commits for working checkpoints:
-
-```bash
-git status
-git add .
-git commit -m "Short description of change"
-git push
+```
+├── backend/
+│   ├── app/
+│   │   ├── core/          # config, database session, errors, logging
+│   │   ├── models/        # all SQLAlchemy models (one file per table)
+│   │   └── modules/       # feature modules: holdings, watchlist, market_data,
+│   │                      # news, financials, ai, chat, health
+│   │                      # each = router → service → repository + schemas
+│   ├── alembic/           # database migrations
+│   └── tests/             # pytest suite (SQLite in-memory, providers/LLM mocked)
+├── frontend/
+│   ├── app/               # Next.js App Router pages
+│   ├── components/        # design system (ui/), layout, charts, reports
+│   └── lib/               # typed API client (lib/api/), formatting, export
+├── docs/                  # roadmap, guides, frozen planning docs
+└── docker-compose.yml     # one-command dev stack
 ```
 
-For Phase 2 feature work, create a branch from `main`:
+## Status & Roadmap
 
-```bash
-git checkout main
-git pull
-git checkout -b phase-2/backend-database-foundation
-```
+**v0 (MVP) is complete** — Phases 0–10: planning, repo/CI setup, backend + DB foundation, holdings/watchlist CRUD, market data, news/financials, AI reports, chat, Markdown export, UI polish, and the test suites. History in the [CHANGELOG](CHANGELOG.md); detailed phase scopes in the [roadmap](docs/roadmap.md).
 
-When the work is ready, push the branch and open a pull request on GitHub.
+**Next up**
 
-## CI
+- Deployment preparation (Phase 12)
+- Backlog: news + financials on the Home page ([#14](https://github.com/xy9iao/ai-stock-analyst/issues/14)), ticker autocomplete ([#15](https://github.com/xy9iao/ai-stock-analyst/issues/15)), Playwright E2E ([#16](https://github.com/xy9iao/ai-stock-analyst/issues/16))
+- **Post-v0:** agent-based research workflows (multi-step analysis, automated news digging) — deliberately deferred from v0 in favor of a simple, explainable context-injection design
 
-GitHub Actions runs basic checks when code is pushed or a pull request is opened:
+## Contributing
 
-- backend dependency install
-- backend Ruff lint
-- backend pytest tests
-- frontend dependency install
-- frontend typecheck
-- frontend build
-
-CI helps catch errors before code is merged into `main`.
+This is a solo portfolio project, so it isn't seeking contributions — but issues and suggestions are welcome. If you spot a bug, [open an issue](https://github.com/xy9iao/ai-stock-analyst/issues).
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE). © Xinyang Qiao

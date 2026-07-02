@@ -4,8 +4,9 @@ Single source of truth for project progress and the **current phase's** detailed
 
 ## Current Status
 
-- **Next: Phase 11 — README & Public Repo Documentation.**
-- **Completed: Phase 0 – Phase 10**, plus the MVP frontend, one-command Docker dev (PR #10), and the lint fix (PR #11, closed #2).
+- **Next: Phase 12 — Future Deployment Preparation** (the last v0 phase).
+- **Completed: Phase 0 – Phase 11**, plus the MVP frontend, one-command Docker dev (PR #10), and the lint fix (PR #11, closed #2).
+- **v0 is feature-frozen** — no new core code; deferred ideas live as GitHub issues (#14, #15, #16). Post-v0 direction: agent-based research workflows.
 
 The **MVP is done, polished, and tested**: holdings/watchlist, market data, news/financials, AI reports, and chat — one cohesive app with a shared top-nav shell, a documented design system (`docs/guides/frontend.md`), loading/empty/error states, beginner tooltips + a disclaimer footer, responsive layout, and a frontend Vitest suite alongside the backend pytest suite (both CI gates). Remaining phases are docs/deploy-prep.
 
@@ -22,8 +23,24 @@ The **MVP is done, polished, and tested**: holdings/watchlist, market data, news
 - [x] **Phase 8 — Export** (logging deferred)
 - [x] **Phase 9 — UI Polish and Beginner Experience**
 - [x] **Phase 10 — Testing and Quality**
-- [ ] **Phase 11 — README and Public Repo Documentation**  ← next
-- [ ] **Phase 12 — Future Deployment Preparation**
+- [x] **Phase 11 — README and Public Repo Documentation**
+- [ ] **Phase 12 — Future Deployment Preparation**  ← next
+
+## Phase 11 Detail (completed)
+
+### Goal
+
+Make the README an interview-grade front door, structured like a big-company open-source project. v0 is feature-complete — this phase adds **no core code**.
+
+### In Scope
+
+- Full README overhaul: header + badges (CI/license/stack), disclaimer callout, screenshots section, features, architecture (Mermaid diagram + report data flow), tech stack (incl. testing/CI), getting started (Docker one-command + `.env` key setup + native dev), development (commands + exact CI gates), project structure tree, roadmap/status (v0 complete, backlog issues, post-v0 agent direction), solo-project contributing note, license.
+- **Screenshot slots** with fixed filenames under `docs/images/` — the developer captures and commits the images themselves (`docs/images/README.md` lists the expected names).
+- Repo hygiene: `.gitignore` the local `.claude/` dir; remove stale text (old "Phase 2" workflow example, outdated CI list).
+
+### Out of Scope
+
+- New features or code changes (v0 frozen); automated screenshot tooling (would ride with #16); CONTRIBUTING.md/SECURITY.md files (solo project — a short note instead).
 
 ## Phase 10 Detail (completed)
 
