@@ -1,6 +1,6 @@
 # Backend Guide
 
-This guide documents the backend structure as implemented through Phase 3 (Holdings/Watchlist CRUD).
+This guide documents the backend as implemented in **v0** (feature-complete, 2026-07-02).
 
 ## Purpose
 
@@ -115,31 +115,18 @@ Boundary rules:
 
 Backend configuration lives in `backend/app/core/config.py`.
 
-Use `pydantic-settings` for typed environment variables. `.env.example` documents expected variables, while local `.env` stores real local values and must not be committed.
+Use `pydantic-settings` for typed environment variables. `.env.example` documents expected variables, while local `.env` (repo root; `config.py` loads `../.env`) stores real local values and must not be committed.
 
-Phase 2 expected settings:
+Settings in use:
 
-- `DATABASE_URL`
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-- `POSTGRES_DB`
+- `DATABASE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
 - `BACKEND_CORS_ORIGINS`
-- `LLM_BASE_URL`
-- `LLM_API_KEY`
-- `LLM_MODEL`
-
-LLM settings are documented during Phase 2, but no AI calls should be implemented yet.
+- `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` (default `deepseek-v4-flash`) — consumed only by `modules/ai/llm_client.py`
+- `MARKET_DATA_PROVIDER` (default `yfinance`) — selects the provider implementation
 
 ## Database
 
-Database setup lives in `backend/app/core/database.py`.
-
-Phase 2 should keep SQLAlchemy 2.x sync ORM style and provide:
-
-- shared declarative base
-- engine creation from `settings.database_url`
-- session factory
-- FastAPI session dependency for future routes
+Database setup lives in `backend/app/core/database.py`: SQLAlchemy 2.x **sync** ORM style, with the shared declarative `Base`, engine creation from `settings.database_url`, the session factory, and the `get_db` FastAPI dependency that routes/repositories use. Tests override `get_db` with an in-memory SQLite session (see `tests/conftest.py`).
 
 ## Alembic
 
@@ -158,31 +145,16 @@ uv run alembic downgrade -1
 
 ## Error Handling
 
-Phase 2 should add `backend/app/core/errors.py`.
-
-The goal is a simple shared place for predictable application errors and API error responses. Avoid leaking secrets or raw internal stack traces in normal responses.
+`backend/app/core/errors.py` defines `AppError(code, message, status_code)` plus a global handler. Services raise `AppError` for handled failures (e.g. not-found → 404, missing LLM key → 503); the handler formats the stable `{"detail": {"code", "message"}}` JSON body. No secrets or raw stack traces in normal responses.
 
 ## Logging
 
-Phase 2 should add `backend/app/core/logging.py`.
+`backend/app/core/logging.py` provides a simple shared logging setup — readable local logs for startup, configuration, database, and API issues. Kept deliberately simple in v0.
 
-The goal is readable local logs for startup, configuration, database, and API issues. Keep logging simple in v0.
+## Testing
+
+`backend/tests/` holds the pytest suite (43 tests): `conftest.py` provides a `client` fixture backed by in-memory SQLite via a `get_db` override; market/news/financials providers and the LLM are monkeypatched at their factory/call seams, so tests run with **no network and no API cost**. `uv run pytest` also reports coverage (`pytest-cov`, measured — not gated).
 
 ## Health Endpoint
 
-Current endpoint:
-
-```txt
-GET /api/health
-```
-
-Expected response:
-
-```json
-{
-  "status": "ok",
-  "service": "ai-stock-analyst-backend"
-}
-```
-
-The health endpoint should continue working throughout Phase 2.
+`GET /api/health` → `{ "status": "ok", "service": "ai-stock-analyst-backend" }` — used by Docker/dev to confirm the API is up.

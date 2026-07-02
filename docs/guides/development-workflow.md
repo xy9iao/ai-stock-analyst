@@ -2,17 +2,20 @@
 
 This document explains the professional workflow for AI Stock Analyst in beginner-friendly terms.
 
-## Current Phase
+## Current Status
 
-Phase 1 is complete. The active phase is **Phase 2: Backend and Database Foundation**.
+**v0 (MVP) is complete and feature-frozen.** Check [`docs/roadmap.md`](../roadmap.md) for the active phase before writing code.
 
-Phase 2 does not build Holdings/Watchlist CRUD yet. It prepares the backend and database so those features can be added safely in the next phase.
+## The Two Development Loops
 
-Use these docs during Phase 2:
+Day-to-day coding uses the **fast inner loop** — native dev servers with hot reload:
 
-- [Phase 2 Plan](phase-2-plan.md)
-- [Backend Guide](backend.md)
-- [Database Guide](database.md)
+```bash
+docker compose up postgres backend    # data layer in Docker
+cd frontend && pnpm dev               # frontend natively, hot reload, /api proxied to :8000
+```
+
+`docker compose up --build` is the **slow outer loop**: images are frozen snapshots, so rebuilding takes minutes. Use it to verify the whole stack wires together (e.g. before a PR), not for every change.
 
 ## Git and GitHub
 
@@ -33,15 +36,17 @@ git push
 
 `main` is the stable branch. Code on `main` should work.
 
-For Phase 2 work, create a separate branch:
+Every phase or fix gets its own branch, then a PR into `main`:
 
 ```bash
-git checkout main
-git pull
-git checkout -b phase-2/backend-database-foundation
+git checkout main && git pull
+git checkout -b <topic-branch>      # e.g. phase-9-ui-polish, fix-lint
+# ...work, commit, push, open a PR, merge...
+git checkout main && git pull --ff-only
+git fetch --prune origin && git branch -d <topic-branch>
 ```
 
-This keeps unfinished backend/database work separate from the stable `main` branch.
+This keeps unfinished work off `main` and gives every change a CI-checked review point.
 
 ## Commits
 
@@ -125,15 +130,12 @@ Run frontend server:
 pnpm dev
 ```
 
-Type check:
+The four frontend gates (all enforced by CI):
 
 ```bash
 pnpm typecheck
-```
-
-Build:
-
-```bash
+pnpm lint
+pnpm test        # Vitest + React Testing Library
 pnpm build
 ```
 
@@ -230,14 +232,14 @@ Phase 2 should add a basic logging setup so startup, configuration, database, an
 
 ## pytest
 
-`pytest` runs backend tests:
+`pytest` runs backend tests (with a coverage report — measured, not gated):
 
 ```bash
 cd backend
 uv run pytest
 ```
 
-Tests protect the app from breaking when code changes.
+Tests use in-memory SQLite and mock all external providers/the LLM, so they need no network, no database, and no API key.
 
 ## Ruff
 
@@ -259,14 +261,10 @@ In this project, GitHub Actions automatically checks code after a push or pull r
 
 Current CI checks:
 
-- backend dependencies install
-- backend Ruff lint
-- backend pytest tests
-- frontend dependencies install
-- frontend typecheck
-- frontend build
+- backend: install → Ruff lint → pytest (with coverage report)
+- frontend: install → typecheck → ESLint → Vitest → build
 
-CI does not deploy the app yet.
+Run the same gates locally before committing. CI does not deploy the app yet.
 
 ## Local Development vs Deployment
 
