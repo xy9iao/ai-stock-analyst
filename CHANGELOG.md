@@ -2,6 +2,12 @@
 
 Build history by phase. The active phase and its detailed scope live in `docs/roadmap.md`; this file is the frozen record of what was completed. Per the Per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
 
+## Phase 11 — README & Public Repo Documentation (done 2026-07-02)
+
+- Built: overhauled the root **README** into a big-company-OSS-style front door — badges (CI / MIT / stack), disclaimer callout, a screenshots section (four named slots under `docs/images/`; images captured by the developer), features, an **architecture section with a Mermaid diagram** + key design decisions + the AI-report data flow, a tech-stack table (incl. testing + CI), Getting Started (one-command Docker quick start, `.env`/LLM-key setup, hot-reload dev loops), development commands + exact CI gates, an annotated project-structure tree, status/roadmap (v0 complete, backlog issues #14–16, post-v0 agent direction), a solo-project contributing note, and license. No core code — v0 is feature-frozen.
+- Files: `README.md` (rewritten), `docs/images/README.md` (new — expected screenshot filenames), `.gitignore` (+`.claude/`, +`frontend/coverage/`), `docs/roadmap.md`.
+- Key decisions: screenshots are **manual** (fixed filenames, developer captures; automated capture would ride with #16); **Mermaid** for the diagram (renders natively on GitHub); no CONTRIBUTING.md/SECURITY.md (solo project — a short note instead of cargo-culted files); removed stale sections (old "Phase 2" git-workflow example, outdated CI list).
+
 ## Phase 10 — Testing & Quality (done 2026-07-02)
 
 - Built: closed the frontend testing gap (the backend already had 43 pytest tests; the frontend had none). Added **Vitest + React Testing Library** (jsdom) — 28 tests covering the pure utils (`format`, `download`), the **API boundary** (`lib/api` with a mocked `fetch` — endpoint/method, error-message extraction, 204 handling), the shared **components** (`Button` variants, `EmptyState`), and a **`HoldingsPage` four-state integration test** (loading / load-error / empty / data via mocked `lib/api`). Wired `pnpm test` into CI. Backend: added **`pytest-cov`** — coverage is now measured on every run (77% total) but **not gated**.
