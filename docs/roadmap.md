@@ -4,10 +4,10 @@ Single source of truth for project progress and the **current phase's** detailed
 
 ## Current Status
 
-- **Next: Phase 10 — Testing & Quality.**
-- **Completed: Phase 0 – Phase 9**, plus the MVP frontend, one-command Docker dev (PR #10), and the lint fix (PR #11, closed #2).
+- **Next: Phase 11 — README & Public Repo Documentation.**
+- **Completed: Phase 0 – Phase 10**, plus the MVP frontend, one-command Docker dev (PR #10), and the lint fix (PR #11, closed #2).
 
-The **MVP is done and polished**: holdings/watchlist, market data, news/financials, AI reports, and chat — one cohesive app (shared top-nav shell, a documented design system in `docs/guides/frontend.md`, loading/empty/error states, beginner tooltips + a disclaimer footer, responsive), with `docker compose up --build` running the whole stack. Remaining phases are testing/infra.
+The **MVP is done, polished, and tested**: holdings/watchlist, market data, news/financials, AI reports, and chat — one cohesive app with a shared top-nav shell, a documented design system (`docs/guides/frontend.md`), loading/empty/error states, beginner tooltips + a disclaimer footer, responsive layout, and a frontend Vitest suite alongside the backend pytest suite (both CI gates). Remaining phases are docs/deploy-prep.
 
 ## Phase Overview
 
@@ -21,9 +21,38 @@ The **MVP is done and polished**: holdings/watchlist, market data, news/financia
 - [x] **Phase 7 — Chat Module**
 - [x] **Phase 8 — Export** (logging deferred)
 - [x] **Phase 9 — UI Polish and Beginner Experience**
-- [ ] **Phase 10 — Testing and Quality**  ← next
-- [ ] **Phase 11 — README and Public Repo Documentation**
+- [x] **Phase 10 — Testing and Quality**
+- [ ] **Phase 11 — README and Public Repo Documentation**  ← next
 - [ ] **Phase 12 — Future Deployment Preparation**
+
+## Phase 10 Detail (completed)
+
+### Goal
+
+Close the testing gap — the backend already had 43 pytest tests, but the frontend had none. Add a frontend test suite and wire it into CI. **Measure** coverage, don't gate on it.
+
+### Decisions (agreed with the developer)
+
+- **Frontend stack: Vitest + React Testing Library** (jsdom) — modern, fast, Jest-compatible.
+- **E2E (Playwright): deferred** to issue #16 — fast unit/component tests first.
+- **Backend: left as-is** (43 tests); added `pytest-cov` to *measure* coverage.
+- **Coverage: measured, not gated** — reported in CI output, no `--cov-fail-under`.
+
+### In Scope
+
+- Vitest + RTL setup (`vitest.config.ts`, `vitest.setup.ts`, `test` / `test:coverage` scripts).
+- Frontend tests: utils (`format`, `download`), the API boundary (`lib/api` with mocked `fetch`), components (`Button`, `EmptyState`), and a `HoldingsPage` four-state integration test.
+- Backend `pytest-cov` (coverage in `addopts`, no threshold).
+- CI: a `pnpm test` frontend gate; backend coverage prints via the existing `uv run pytest`.
+
+### Out of Scope
+
+- E2E / Playwright (#16); backend test expansion; coverage thresholds.
+
+### Verify
+
+- `pnpm test` (28 frontend tests) + `pnpm typecheck` + `pnpm lint` + `pnpm build` green.
+- `uv run pytest` (43 backend tests; 77% coverage reported).
 
 ## Phase 9 Detail (completed)
 

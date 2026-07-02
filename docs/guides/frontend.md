@@ -8,6 +8,19 @@ The frontend is a **Next.js 15 (App Router) + React 19 + TypeScript** app styled
 - `pnpm typecheck` / `pnpm lint` / `pnpm build` — the three CI gates; run before committing.
 - For data, run the backend + Postgres (e.g. `docker compose up postgres backend`); `pnpm dev` proxies `/api/*` to the backend (see `next.config.ts`). Reserve `docker compose up --build` for full-stack/integration checks, not day-to-day iteration.
 
+## Testing
+
+**Vitest + React Testing Library** (jsdom). `pnpm test` runs the suite (a CI gate); `pnpm test:coverage` reports coverage. Tests live next to what they cover (`*.test.ts` / `*.test.tsx`).
+
+Covered:
+
+- **Utils** — `lib/format`, `lib/download` (pure functions).
+- **API boundary** — `lib/api/*` with a mocked `fetch` (right endpoint/method; throws the backend message on non-2xx; `undefined` on 204).
+- **Components** — `Button` variants, `EmptyState`.
+- **Page integration** — `HoldingsPage` renders each of the four data states (loading / load-error / empty / data) via mocked `lib/api/*`.
+
+Two gotchas for page tests: wrap the render in `TooltipProvider` (pages with `InfoTip` need it — the app mounts one in `layout.tsx`), and mock `next/link` with a passthrough.
+
 ## Structure
 
 - `app/` — App Router pages: `/` (dashboard), `/holdings`, `/watchlist`, `/reports`, `/chat`, `/stocks/[ticker]`. `layout.tsx` mounts the shared `TopNav`, `Footer`, the tooltip provider, and the toast `Toaster`.
