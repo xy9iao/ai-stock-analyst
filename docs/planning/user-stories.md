@@ -1,3 +1,5 @@
+> **v0 Outcome (2026-07-02).** All six core flows shipped in v0, with two adjustments: Flow 2's "combined overview on the Dashboard" became a minimal Home page (report generation lives on `/reports`; a content-rich Home is issue #14), and reports carry action guidance in prose rather than structured labels. See the ticked acceptance criteria in §11.
+
 ## 1. Purpose
 
 This document defines the main user stories for the MVP version of AI Stock Analyst.
@@ -289,13 +291,15 @@ As a user, I want to download today's report or export my chat history, so that 
 
 The MVP should be considered successful if:
 
-- The user can manually add holdings.
-- The user can manually add watchlist items.
-- The user can fetch current price and percentage change.
-- The user can request a holdings report.
-- The user can request a combined market, holdings, and watchlist report.
-- The user can request single-stock analysis.
-- The user can ask investment-related questions in Chat.
-- The AI gives direct suggestions with beginner-friendly explanations.
-- The user can open a stock detail page from holdings or watchlist.
-- The user can export or download at least one type of report or log.
+- [x] The user can manually add holdings.
+- [x] The user can manually add watchlist items.
+- [x] The user can fetch current price and percentage change.
+- [x] The user can request a holdings report. *(the `portfolio` report type)*
+- [x] The user can request a combined market, holdings, and watchlist report. *(partial — the portfolio report covers holdings + watchlist; market-index/macro context deferred)*
+- [x] The user can request single-stock analysis.
+- [x] The user can ask investment-related questions in Chat.
+- [x] The AI gives direct suggestions with beginner-friendly explanations.
+- [x] The user can open a stock detail page from holdings or watchlist.
+- [x] The user can export or download at least one type of report or log. *(Markdown export for reports and chat)*
+
+**v0 verdict: met** (one criterion partial, noted above).

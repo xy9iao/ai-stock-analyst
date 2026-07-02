@@ -1,3 +1,9 @@
+> **v0 Outcome (2026-07-02).** v0 shipped and is feature-frozen. Status against this spec:
+>
+> **Shipped:** single-user local-first app · holdings CRUD with live price/value/gain-loss (§5) · watchlist CRUD (§6) · charts 1d/1w/1m/1y (§7) · Postgres-cached data refresh (§8) · single-stock + portfolio AI reports (§9.2/§9.4) · investment-scoped chat with toggleable holdings/watchlist/ticker/report context (§12) · Markdown export · provider abstraction over yfinance (§13) · advice-boundary disclaimer in prompts and UI (§11) · all eight DB tables (§15).
+>
+> **Deferred / adjusted:** Dashboard (§4.1) → the root is a minimal Home page; a real dashboard waits for user accounts (issue #14 adds news/financials to Home) · action labels (§10) appear inside report text, not as structured UI chips · Settings page (§4.7) → configuration stays in `.env` · overall market report with index/macro data (§9.1) and the watchlist-opportunity report type (§9.3) → only `single_stock` and `portfolio` types shipped · chart previews in tables and news on the stock-detail page → not built · `stock_notes` / `settings` tables have no API yet.
+
 ## 1. Purpose
 
 This document defines the functional and non-functional requirements for the MVP version of AI Stock Analyst.
