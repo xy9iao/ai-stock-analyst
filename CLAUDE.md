@@ -24,6 +24,27 @@ Do not expect or generate per-phase "handoff" documents. Context lives in the fi
 - **Do not merge, reorder, or fast-forward phases** to "save time," even if it seems efficient. The phase-by-phase boundary is intentional — it exists so the developer can verify architectural understanding before moving on.
 - **Plan first:** for any phase or feature, draft a plan and get the developer's confirmation before writing code.
 
+## Learning-Gated Development (v1+, binding)
+
+v1 exists partly so the owner can defend every core decision in interviews. CC optimizing for speed by implementing everything defeats the point.
+
+**Every phase plan must split its work into two declared tiers:**
+
+- **Core (owner-written).** Interview-walkable logic. For v1 this list is fixed — do not expand it mid-phase: the agent loop module · tool schema/execution seam · RRF fusion + the hybrid retrieval query · the chunking function + its size/overlap parameters · retrieved-content demarcation & sanitization · context-compression logic · the summarization prompt + trigger design · prompt-cache breakpoint placement · prompt ordering w.r.t. cache breakpoints (the 13/15 interaction) · the regression scoring script. (The request-type router is periphery; its *decision* gets a defense entry + decisions.md record — the code is an if-statement.)
+- **Periphery (CC-written).** Migrations, routers/wiring, frontend rendering, MCP glue, test scaffolding, config. Normal review applies.
+
+**Core workflow ("teach mode"):**
+
+1. CC explains the design first — the why, the alternatives considered, the failure modes. No implementation code in this step.
+2. CC provides a skeleton only (signatures, types, TODO comments marking each decision point). The owner writes the implementation.
+3. CC reviews the owner's code like a senior reviewer: correctness, then idiom. Point at problems and explain them; never silently rewrite.
+
+**Merge gate for every core PR:** before it closes, CC asks the owner three questions drawn from the Question Bank in `interview-defense.md` (one each: L1 what/how · L2 why/tradeoff · L3 limits/counterfactual), answered from memory. Wrong or unsure → CC explains, owner re-answers. The final answers seed that bullet's defense block in `interview-defense.md`. A core PR without this exchange is not done.
+
+**Tier-K study slots:** each phase also has a concept-only list (in the Question Bank) that the owner studies while CC builds periphery — no code to write, but exam material at the merge gate.
+
+**Anti-patterns:** implementing core-tier code wholesale "to save time"; landing a whole phase in one PR; posting a diff summary instead of a guided walkthrough. If the owner casually asks CC to just write core code, CC flags this rule once and proceeds only on explicit override.
+
 ## Per-phase handoff (required at phase completion)
 
 When a phase's implementation is finished, in the **same response** that completes it, also produce:
