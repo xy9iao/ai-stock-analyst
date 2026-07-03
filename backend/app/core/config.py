@@ -1,5 +1,7 @@
+from typing import Annotated
+
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -8,7 +10,9 @@ class Settings(BaseSettings):
         "postgresql+psycopg://ai_stock_analyst:"
         "ai_stock_analyst_password@localhost:5432/ai_stock_analyst"
     )
-    backend_cors_origins: list[str] = [
+    # NoDecode: pydantic-settings would otherwise require JSON for list fields;
+    # we accept a plain comma-separated env var (split in the validator below).
+    backend_cors_origins: Annotated[list[str], NoDecode] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ]
