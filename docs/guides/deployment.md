@@ -26,8 +26,11 @@ In the [DeepSeek platform](https://platform.deepseek.com), top up only a small a
 
 1. [render.com](https://render.com) → New → **Web Service** → connect the GitHub repo.
 2. Language **Docker**; Root Directory **`backend`**.
-3. **Docker Command** (runs migrations before boot, same as Compose):
-   `sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT"`
+3. **Docker Command: leave empty.** The image's own CMD migrates then serves
+   (`alembic upgrade head && uvicorn ... --port ${PORT:-8000}`) and honors the
+   platform-injected `PORT`. Don't wrap a command here — Render's field has its
+   own shell/tokenization quirks (`sh -c "..."` gets double-wrapped, and a bare
+   `&&` chain is exec'd without a shell).
 4. Environment variables:
    - `DATABASE_URL` — the Neon URL from Step 1
    - `LLM_BASE_URL=https://api.deepseek.com`, `LLM_API_KEY=...`, `LLM_MODEL=deepseek-v4-flash`
