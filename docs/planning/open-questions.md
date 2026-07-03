@@ -472,15 +472,12 @@ Need to decide after implementation starts.
 
 ---
 
-## 11. Current Priority
+## 11. Still Open
 
-The most important open questions before coding are:
+Everything that blocked early coding is long resolved (see the resolution banner at the top). The genuinely still-open questions are all deferred behind the post-v1 demand gate and **none block v1**:
 
-1. Which market data provider to use first
-2. Which UI component library to use
-3. Which charting library to use
-4. Whether to store reports as Markdown only
-5. Whether backend database access should be sync or async
-6. Which LLM provider to use first
-
-These should be resolved during early implementation.
+- **Q6** — earnings-call transcripts
+- **Q19** — user accounts
+- **Q20** — onboarding flow
+- **Q21** — Beginner vs Professional modes
+- **Q22** — Chinese / bilingual output

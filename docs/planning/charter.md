@@ -1,3 +1,5 @@
+> **v0 Outcome (2026-07-02).** The MVP scope in §8 largely shipped (holdings/watchlist, single-stock + portfolio reports, chat, Markdown export); the market-overview report and structured action labels were deferred (see `requirements.md` banner). **§13's long-term list is a historical brainstorm, not a backlog** — post-v1 feature intake is demand-gated (same pain 3+ times in real use), and the v1 non-goals in `docs/roadmap.md` (multi-agent, auth/accounts, etc.) supersede items here where they conflict.
+
 ## 1. Project Name
 
 AI Stock Analyst

@@ -3,7 +3,7 @@
 How this folder is organized.
 
 - **[`roadmap.md`](roadmap.md)** — progress and the active phase's scope. **Single source of truth** for what phase we're in and what's in/out of scope. Check this before writing code.
-- **[`planning/`](planning/)** — high-level design, read for **intent** (not literal code layout): `charter.md`, `vision.md`, `requirements.md`, `user-stories.md`, `architecture.md`, `data-sources.md`, `ai-design.md`, `decisions.md`, `open-questions.md`. Each carries a v0-outcome status note; this folder is also where the **next version** (post-v0, agent-focused) will be planned. Only `decisions.md` and `open-questions.md` may be appended to during a version.
+- **[`planning/`](planning/)** — high-level design intent (not literal code layout): `charter.md`, `vision.md`, `requirements.md`, `user-stories.md`, `architecture.md`, `data-sources.md`, `ai-design.md`, `decisions.md`, `open-questions.md`. Each carries a dated v0-outcome/v1 status banner; **version scope itself lives in [`roadmap.md`](roadmap.md)**. Only `decisions.md` and `open-questions.md` are appended to as the project evolves.
 - **[`guides/`](guides/)** — implementation reference, kept accurate as code changes: `backend.md`, `database.md`, `api.md`, `frontend.md`, `development-workflow.md`.
 - **[`images/`](images/)** — screenshots referenced by the root README.
 

@@ -1,4 +1,4 @@
-> **v0 Outcome (2026-07-02).** All eight decisions below held through v0 unchanged: Obsidian→repo docs, React+FastAPI+PostgreSQL+Docker, modular monolith, AI inside the backend (`modules/ai/`), PostgreSQL, local-first with deploy-ready design, provider abstraction (yfinance in v0), analysis-only (no trade execution).
+> **v0 Outcome (2026-07-02).** The eight v0 planning decisions below held through v0 unchanged: Obsidian→repo docs, React+FastAPI+PostgreSQL+Docker, modular monolith, AI inside the backend (`modules/ai/`), PostgreSQL, local-first with deploy-ready design, provider abstraction (yfinance in v0), analysis-only (no trade execution). Two were added later: **009** (demo deployment — anonymous sessions + three-layer cost defense) at Phase 12, and **010** (v1 hand-written agent loop, no frameworks) at v1 planning.
 
 ## 1. Purpose
 
@@ -376,6 +376,8 @@ The MVP will not include:
 The system may provide action labels such as Buy, Hold, Reduce, Sell, or Wait, but these are analysis outputs only.
 
 The user remains responsible for final investment decisions.
+---
+
 # Decision 009: Demo deployment — anonymous sessions + three-layer LLM cost defense (no auth system)
 
 ## Date
@@ -395,6 +397,8 @@ A dead or expensive demo is worse than none; a full auth system is pure CRUD lab
 - One extra migration (`session_id` buckets + `llm_calls`); local use is unchanged (`DEMO_MODE=false`, permanent `local` bucket).
 - The LLM is off by default in the demo — it must be switched on (with a TTL) before showing it to someone.
 - The `llm_calls` log (with reserved `route`/`steps` fields) becomes the data source for post-v0 pipeline-vs-agent experiments.
+
+---
 
 # Decision 010: v1 agent layer — hand-written tool-use loop, no agent frameworks
 

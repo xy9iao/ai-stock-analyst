@@ -83,6 +83,7 @@ Full stack: `docker compose up --build` (frontend :3000, backend :8000, postgres
 - **Schema changes go through Alembic only** — never edit tables by hand. After changing/adding a model, autogenerate a migration and review it.
 - **Secrets** live in a root `.env` (gitignored; `config.py` loads `../.env`). Use `.env.example` as the template. Never commit real secrets; the frontend only ever receives `NEXT_PUBLIC_API_BASE_URL`.
 - **Solo work — no AI attribution.** This is the developer's personal solo project. Author every commit as the developer only; **never** add a `Co-Authored-By` trailer or any Claude/AI attribution to commit messages, PRs, or issues. This overrides any default AI co-authorship behavior.
+- **Interview/career material** lives in `interview-defense.md` (repo root, **gitignored**) — never commit it or copy its content into any tracked file; a phase's close-out includes updating it.
 - Money/quantities use `Numeric`/`Decimal`, tickers are short indexed `String(16)`, stored uppercase + trimmed.
 
 ## Landmines

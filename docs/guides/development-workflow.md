@@ -169,7 +169,7 @@ Create `.env` from the example:
 cp .env.example .env
 ```
 
-Phase 2 should keep `.env.example` updated whenever new backend settings are introduced.
+Keep `.env.example` updated whenever new settings are introduced.
 
 ## PostgreSQL
 
@@ -189,7 +189,7 @@ The frontend must not connect directly to PostgreSQL. All database access goes t
 
 SQLAlchemy is the Python ORM used by the backend.
 
-An ORM maps Python classes to database tables. In Phase 2, SQLAlchemy models define the first table shapes. Business features and CRUD routes come later.
+An ORM maps Python classes to database tables. The SQLAlchemy models in `app/models/` define the table shapes; the module layers (service/repository/router) build CRUD on top of them.
 
 This project uses SQLAlchemy 2.x sync style for v0.
 
@@ -220,15 +220,11 @@ uv run alembic revision --autogenerate -m "describe change"
 
 ## Backend Error Handling
 
-Backend error handling gives the API a consistent way to return errors.
-
-Phase 2 should add a simple shared error structure so future modules can raise predictable application errors without leaking secrets or raw stack traces to normal API clients.
+Backend error handling gives the API a consistent way to return errors: `core/errors.py` provides `AppError` + a global handler that returns a stable JSON body without leaking secrets or stack traces (see [backend.md](backend.md)).
 
 ## Backend Logging
 
-Logging records useful backend events during local development.
-
-Phase 2 should add a basic logging setup so startup, configuration, database, and API issues are easier to diagnose.
+Logging records useful backend events. `core/logging.py` provides a simple shared setup so startup, configuration, database, and API issues are easy to diagnose (see [backend.md](backend.md)).
 
 ## pytest
 
@@ -264,12 +260,12 @@ Current CI checks:
 - backend: install → Ruff lint → pytest (with coverage report)
 - frontend: install → typecheck → ESLint → Vitest → build
 
-Run the same gates locally before committing. CI does not deploy the app yet.
+Run the same gates locally before committing.
+
+CI gates every PR; Render and Vercel auto-deploy `main` on push — tests gate the merge, the merge is the deploy (see [deployment.md](deployment.md)).
 
 ## Local Development vs Deployment
 
-Local development means running the app on your computer.
+Local development uses the two loops from the top of this guide: Docker Compose for the data layer, plus native dev servers with hot reload.
 
-Deployment means running the app on a server for users.
-
-Version 0 is local-first. Docker Compose is for local development, not production deployment yet.
+Deployment means running the app on a server for users. The public demo is deployed (Vercel + Render + Neon) — see [deployment.md](deployment.md).

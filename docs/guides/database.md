@@ -61,7 +61,7 @@ Created by the initial migration (all inherit `TimestampMixin`):
 - `market_data_cache`
 - `settings`
 
-## Recommended Fields
+## Fields (as implemented)
 
 Common fields where useful:
 
