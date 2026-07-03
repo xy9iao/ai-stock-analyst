@@ -7,16 +7,20 @@ from app.models import WatchlistItem
 from app.modules.watchlist.schemas import WatchlistItemCreate, WatchlistItemUpdate
 
 
-def list_items(db: Session) -> list[WatchlistItem]:
-    return db.scalars(select(WatchlistItem)).all()
+def list_items(db: Session, session_id: str) -> list[WatchlistItem]:
+    return db.scalars(select(WatchlistItem).where(WatchlistItem.session_id == session_id)).all()
 
 
-def get_item(db: Session, item_id: int) -> WatchlistItem | None:
-    return db.get(WatchlistItem, item_id)
+def get_item(db: Session, item_id: int, session_id: str) -> WatchlistItem | None:
+    item = db.get(WatchlistItem, item_id)
+    # A row in another demo session's bucket is treated as nonexistent (404).
+    if item is not None and item.session_id != session_id:
+        return None
+    return item
 
 
-def create_item(db: Session, data: WatchlistItemCreate) -> WatchlistItem:
-    item = WatchlistItem(**data.model_dump())
+def create_item(db: Session, data: WatchlistItemCreate, session_id: str) -> WatchlistItem:
+    item = WatchlistItem(**data.model_dump(), session_id=session_id)
     db.add(item)
     db.commit()
     db.refresh(item)

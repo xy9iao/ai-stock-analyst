@@ -1,5 +1,6 @@
 from app.models.chat import ChatMessage, ChatSession
 from app.models.holding import Holding
+from app.models.llm_call import LlmCall
 from app.models.market_data_cache import MarketDataCache
 from app.models.report import Report
 from app.models.setting import Setting
@@ -10,6 +11,7 @@ __all__ = [
     "ChatMessage",
     "ChatSession",
     "Holding",
+    "LlmCall",
     "MarketDataCache",
     "Report",
     "Setting",

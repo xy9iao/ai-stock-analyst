@@ -1,4 +1,15 @@
+import pytest
+
 from app.core.config import Settings
+
+
+def test_settings_parse_cors_origins_from_real_env_var(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Regression: pydantic-settings JSON-decodes list fields from env vars unless
+    # NoDecode is set — a bare URL string used to crash Settings() at boot
+    # (exactly how a hosting platform provides the variable).
+    monkeypatch.setenv("BACKEND_CORS_ORIGINS", "https://demo.example.com")
+    settings = Settings(_env_file=None)
+    assert settings.backend_cors_origins == ["https://demo.example.com"]
 
 
 def test_settings_parse_cors_origins_from_comma_separated_string() -> None:

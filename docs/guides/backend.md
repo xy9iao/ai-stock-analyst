@@ -25,7 +25,9 @@ backend/
 │   │   ├── cache.py         # shared TTL cache (market data, news, financials)
 │   │   ├── config.py        # typed pydantic-settings
 │   │   ├── database.py      # engine, get_db session dependency, Base
+│   │   ├── demo_session.py  # anonymous demo-session cookie middleware + TTL cleanup
 │   │   ├── errors.py        # AppError + global handler
+│   │   ├── llm_switch.py    # LLM master switch (settings-table row + TTL)
 │   │   └── logging.py
 │   ├── models/              # all SQLAlchemy models (one file per table)
 │   └── modules/
@@ -67,10 +69,15 @@ backend/
 │       │   ├── repository.py       # reports table read/write
 │       │   ├── router.py
 │       │   └── schemas.py
-│       └── chat/            # investment chat assistant (Phase 7)
-│           ├── context.py          # toggleable context assembly (reuses ai/context)
-│           ├── service.py          # orchestration + scope control
-│           ├── repository.py       # chat_sessions / chat_messages
+│       ├── chat/            # investment chat assistant (Phase 7)
+│       │   ├── context.py          # toggleable context assembly (reuses ai/context)
+│       │   ├── service.py          # orchestration + scope control + demo cap
+│       │   ├── repository.py       # chat_sessions / chat_messages
+│       │   ├── router.py
+│       │   └── schemas.py
+│       ├── session/         # demo-session reset endpoint (Phase 12)
+│       │   └── router.py
+│       └── admin/           # LLM master switch (token-gated) + /api/stats (Phase 12)
 │           ├── router.py
 │           └── schemas.py
 ├── alembic/
@@ -150,6 +157,24 @@ uv run alembic downgrade -1
 ## Logging
 
 `backend/app/core/logging.py` provides a simple shared logging setup — readable local logs for startup, configuration, database, and API issues. Kept deliberately simple in v0.
+
+## Demo hardening (Phase 12)
+
+For the public demo (`DEMO_MODE=true`; off by default so local use is unchanged):
+
+- **Anonymous session isolation** — `core/demo_session.py` middleware issues a `session_id`
+  cookie; `holdings`, `watchlist_items`, `reports`, `chat_sessions` carry an indexed
+  `session_id` column (`SessionScopedMixin`) and every repository filters by it. Local data
+  lives in the permanent `"local"` bucket. Idle demo buckets are deleted after
+  `DEMO_SESSION_TTL_DAYS` (lazy, throttled cleanup).
+- **Cost defense (three layers):** ① DeepSeek prepaid balance = budget hard cap (operational);
+  ② `core/llm_switch.py` — master switch stored in the `settings` table, default OFF, enabled
+  via `POST /api/admin/llm` with a TTL, checked inside `llm_client` (the single gateway);
+  ③ per-session caps in the `ai`/`chat` services, counted in **LLM calls** (agent-proof),
+  derived from existing rows (no counter infra).
+- **Observability** — `llm_client` writes one `llm_calls` row per call (tokens, latency,
+  `route`/`steps` reserved for the agent version) + a structured log line; `GET /api/stats`
+  aggregates them.
 
 ## Testing
 

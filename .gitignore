@@ -34,3 +34,6 @@ pnpm-debug.log*
 
 # Vitest coverage output
 frontend/coverage/
+
+# Local interview prep (never publish)
+interview-defense.md

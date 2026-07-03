@@ -5,6 +5,12 @@ frontend reaches these only through `frontend/lib/api/` — never the DB directl
 
 Interactive docs are served at `/docs` (Swagger) and `/redoc` when the backend runs.
 
+**Demo mode** (`DEMO_MODE=true`, public deployments only): every visitor gets an anonymous
+`session_id` cookie and all user data (holdings, watchlist, reports, chat) is scoped to it —
+another session's rows behave as `404`. LLM endpoints add two protections: a **master switch**
+(off ⇒ `503` `llm_disabled`) and **per-session caps** (exceeded ⇒ `429` `demo_report_limit` /
+`demo_chat_limit`). Locally (default) none of this is active and data lives in one shared bucket.
+
 ## Conventions
 
 - **Resource per module**, one router each (`health`, `holdings`, `watchlist`).
@@ -156,3 +162,20 @@ injection is **toggleable per message**.
 `POST` body: `{ "message": str, "session_id"?: int, "context"?: { "include_holdings"?: bool,
 "include_watchlist"?: bool, "ticker"?: str, "include_recent_reports"?: bool } }` — omit
 `session_id` to start a new conversation. Returns `{ session_id, reply }`.
+
+## Session (demo)
+
+| Method | Path | Purpose | Success |
+|--------|------|---------|---------|
+| POST | `/api/session/reset` | drop the demo cookie; next request gets a fresh empty bucket | `204` |
+
+## Admin & Stats
+
+The admin endpoints require the `X-Admin-Token` header matching `ADMIN_TOKEN` (unset ⇒ always
+`403`, fail-closed). `/api/stats` is public — aggregates only, no user data.
+
+| Method | Path | Purpose | Success / Errors |
+|--------|------|---------|------------------|
+| POST | `/api/admin/llm` | set the LLM master switch (`{ enabled, ttl_minutes? }`; on always expires after the TTL, default 60 min) | `200` / `403` |
+| GET | `/api/admin/llm` | current switch state | `200` / `403` |
+| GET | `/api/stats` | LLM usage aggregates (calls, tokens, avg latency, by kind) from `llm_calls` | `200` |

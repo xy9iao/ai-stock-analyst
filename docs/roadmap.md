@@ -4,9 +4,8 @@ Single source of truth for project progress and the active phase's scope. Check 
 
 ## Current Status
 
-- **v0 (MVP) is complete and feature-frozen** — Phases 0–11 merged (2026-06 → 2026-07-02).
-- **Next: Phase 12 — Deployment Preparation**, the final v0 phase. Plan it before building (see below).
-- No new core features land in v0. Deferred ideas are GitHub issues; the **next version (agent-focused)** will be planned in `docs/planning/`.
+- **v0 is complete — all 12 phases done** (2026-06 → 2026-07-03). The demo-hardening code is built and tested; going live = following `docs/guides/deployment.md` (Vercel + Render + Neon accounts), then pasting the URL into the README.
+- **Next:** the **next version (agent-focused)**, planned first in `docs/planning/`. Deferred ideas stay as GitHub issues.
 
 ## v0 Phase Summary
 
@@ -24,12 +23,19 @@ Single source of truth for project progress and the active phase's scope. Check 
 | 9 — UI polish | top-nav app shell, design system (Button/Card/Input/Badge + tokens), four-state views, toasts, tooltips, disclaimer footer, responsive nav, minimal Home | [PR #13](https://github.com/xy9iao/ai-stock-analyst/pull/13) |
 | 10 — Testing | frontend Vitest + RTL suite (28 tests) wired into CI; backend `pytest-cov` (43 tests, coverage measured not gated) | [PR #17](https://github.com/xy9iao/ai-stock-analyst/pull/17) |
 | 11 — README | big-company-OSS-style README: badges, screenshots, Mermaid architecture, getting started | [PR #18](https://github.com/xy9iao/ai-stock-analyst/pull/18) |
+| 12 — Deployment | anonymous session isolation, three-layer LLM cost defense (prepaid cap / master switch / per-session caps), `llm_calls` + `/api/stats` observability, Vercel+Render+Neon deploy guide | PR #20 |
 
 **Off-roadmap work:** MIT license ([#4](https://github.com/xy9iao/ai-stock-analyst/pull/4)) · frontend MVP UI for reports/chat ([#9](https://github.com/xy9iao/ai-stock-analyst/pull/9)) · one-command Docker dev ([#10](https://github.com/xy9iao/ai-stock-analyst/pull/10)) · ESLint 9 flat config + lint CI gate ([#11](https://github.com/xy9iao/ai-stock-analyst/pull/11), closed issue #2) · v0 docs freeze (this branch).
 
-## Phase 12 — Deployment Preparation (next, not started)
+## Phase 12 — Deployment (completed)
 
-Rough scope, to be planned in detail first: production configuration hardening (settings split, CORS, secrets story — `open-questions.md` Q25/Q26), hosting decision (frontend host + backend host + managed Postgres), production Docker images, deployment documentation. Goal: the repo is *ready* to deploy, not necessarily deployed.
+Delivered exactly the approved scope — a demo-hardened deployment with 2–3 defensible production decisions, no K8s/Terraform/staging/auth/monitoring-stack/load-testing:
+
+1. **Anonymous session isolation** behind `DEMO_MODE` (default off — local behavior unchanged; pre-demo rows backfilled to the permanent `local` bucket): cookie middleware, `session_id` buckets on holdings/watchlist/reports/chat, 7-day TTL cleanup, a "New demo session" footer button.
+2. **Three-layer cost defense:** ① DeepSeek prepaid = budget hard cap · ② LLM master switch (`settings.llm_enabled_until`, admin-token endpoint, checked at the `llm_client` gateway, default OFF, TTL-bound enable) · ③ per-session caps counted in **LLM calls** (reports ≤3, chat ≤20, `429`).
+3. **Observability:** `llm_calls` table (tokens/latency; `route`/`steps` reserved for the agent version) + structured logs + `GET /api/stats`.
+4. One reviewed migration (`b3074aa5c807`). 52 backend tests (9 new).
+5. **Deploy guide** (`docs/guides/deployment.md`): Vercel + Render free + Neon free; cold start accepted with an application-season upgrade TODO; CI gates the merge, the merge is the deploy (platform auto-deploy on `main`).
 
 ## Backlog (deferred to issues)
 

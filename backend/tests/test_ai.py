@@ -12,8 +12,10 @@ from app.modules.ai import context, llm_client
 @pytest.fixture
 def fake_ai(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(llm_client, "complete", lambda system, user, **kw: "# Report\n\nMock body.")
-    monkeypatch.setattr(context, "build_single_stock_context", lambda db, ticker: f"ctx:{ticker}")
-    monkeypatch.setattr(context, "build_portfolio_context", lambda db: "portfolio ctx")
+    monkeypatch.setattr(
+        context, "build_single_stock_context", lambda db, ticker, session_id: f"ctx:{ticker}"
+    )
+    monkeypatch.setattr(context, "build_portfolio_context", lambda db, session_id: "portfolio ctx")
 
 
 def test_generate_single_stock_report(client: TestClient, fake_ai: None) -> None:
@@ -61,7 +63,7 @@ def test_single_stock_unknown_ticker_propagates_404(
 ) -> None:
     monkeypatch.setattr(llm_client, "complete", lambda system, user, **kw: "unused")
 
-    def _missing(db, ticker):
+    def _missing(db, ticker, session_id):
         raise AppError("ticker_not_found", f"No data for {ticker}", 404)
 
     monkeypatch.setattr(context, "build_single_stock_context", _missing)

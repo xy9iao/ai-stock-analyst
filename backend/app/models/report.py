@@ -2,10 +2,10 @@ from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import SessionScopedMixin, TimestampMixin
 
 
-class Report(TimestampMixin, Base):
+class Report(SessionScopedMixin, TimestampMixin, Base):
     __tablename__ = "reports"
 
     id: Mapped[int] = mapped_column(primary_key=True)

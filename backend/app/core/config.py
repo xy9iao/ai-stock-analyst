@@ -1,5 +1,7 @@
+from typing import Annotated
+
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -8,14 +10,27 @@ class Settings(BaseSettings):
         "postgresql+psycopg://ai_stock_analyst:"
         "ai_stock_analyst_password@localhost:5432/ai_stock_analyst"
     )
-    backend_cors_origins: list[str] = [
+    # NoDecode: pydantic-settings would otherwise require JSON for list fields;
+    # we accept a plain comma-separated env var (split in the validator below).
+    backend_cors_origins: Annotated[list[str], NoDecode] = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ]
     llm_base_url: str = ""
     llm_api_key: str = ""
     llm_model: str = "deepseek-v4-flash"
+    llm_timeout_seconds: float = 60.0
     market_data_provider: str = "yfinance"
+
+    # Public-demo hardening. All OFF by default so local use is unchanged:
+    # DEMO_MODE=true enables anonymous session isolation, per-session LLM caps,
+    # and the LLM master switch (default off, enabled via the admin endpoint).
+    demo_mode: bool = False
+    admin_token: str = ""
+    demo_session_ttl_days: int = 7
+    demo_report_limit: int = 3
+    demo_chat_llm_limit: int = 20
+    llm_switch_ttl_minutes: int = 60
 
     model_config = SettingsConfigDict(
         env_file="../.env",

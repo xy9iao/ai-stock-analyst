@@ -4,10 +4,10 @@ from sqlalchemy import Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import SessionScopedMixin, TimestampMixin
 
 
-class Holding(TimestampMixin, Base):
+class Holding(SessionScopedMixin, TimestampMixin, Base):
     __tablename__ = "holdings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
