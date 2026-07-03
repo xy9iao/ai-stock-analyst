@@ -54,7 +54,16 @@ In the [DeepSeek platform](https://platform.deepseek.com), top up only a small a
 
 ## Step 5 — Operating the LLM switch
 
-Turn the LLM on before a demo/interview (auto-off after the TTL, default 60 min):
+Turn the LLM on before a demo/interview (auto-off after the TTL, default 60 min). The repo ships a helper — it reads `ADMIN_TOKEN` and `DEMO_API_URL` from the gitignored root `.env`:
+
+```bash
+scripts/demo-llm.sh on [minutes]   # enable (default TTL 60)
+scripts/demo-llm.sh off            # disable now
+scripts/demo-llm.sh status         # on? until when?
+scripts/demo-llm.sh stats          # usage aggregates
+```
+
+Raw equivalent:
 
 ```bash
 curl -X POST https://<render-url>/api/admin/llm \

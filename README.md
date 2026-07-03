@@ -13,7 +13,7 @@ A **local-first, AI-powered stock research assistant** — track your holdings a
 
 ## Live Demo
 
-🔗 **Demo:** _link coming soon_ (deploying via [the deployment guide](docs/guides/deployment.md))
+🔗 **Demo: [ai-stock-analyst-pi.vercel.app](https://ai-stock-analyst-pi.vercel.app)** — deployed on Vercel + Render + Neon via [the deployment guide](docs/guides/deployment.md)
 
 The demo is a shared, unauthenticated instance hardened for public exposure: every visitor gets an isolated **anonymous session** (cookie-scoped data, 7-day TTL — no account needed), and LLM cost is protected by **three independent layers**: a prepaid budget hard cap, an admin-controlled master switch with a TTL, and per-session limits (3 reports / 20 chat replies, counted in LLM calls). First load may take up to a minute if the free-tier backend was asleep. Use **"New demo session"** in the footer to start fresh.
 
