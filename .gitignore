@@ -38,5 +38,3 @@ frontend/coverage/
 # Local interview prep (never publish)
 interview-defense.md
 
-# Local demo ops script (reads secrets from .env)
-scripts/demo-llm.sh
