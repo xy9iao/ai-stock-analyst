@@ -2,10 +2,10 @@ from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import SessionScopedMixin, TimestampMixin
 
 
-class ChatSession(TimestampMixin, Base):
+class ChatSession(SessionScopedMixin, TimestampMixin, Base):
     __tablename__ = "chat_sessions"
 
     id: Mapped[int] = mapped_column(primary_key=True)

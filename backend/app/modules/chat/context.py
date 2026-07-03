@@ -15,21 +15,23 @@ from app.modules.watchlist import repository as watchlist_repo
 _MAX_REPORTS = 5
 
 
-def build_context(db: Session, options: ChatContextOptions) -> str:
+def build_context(db: Session, options: ChatContextOptions, session_id: str) -> str:
     blocks: list[str] = []
 
     if options.include_holdings:
-        blocks.append("Portfolio:\n" + ai_context.build_portfolio_context(db))
+        blocks.append("Portfolio:\n" + ai_context.build_portfolio_context(db, session_id))
 
     if options.ticker:
         symbol = options.ticker.strip().upper()
         try:
-            blocks.append("Focus stock:\n" + ai_context.build_single_stock_context(db, symbol))
+            blocks.append(
+                "Focus stock:\n" + ai_context.build_single_stock_context(db, symbol, session_id)
+            )
         except AppError:
             blocks.append(f"Focus stock {symbol}: market data unavailable.")
 
     if options.include_watchlist:
-        items = watchlist_repo.list_items(db)
+        items = watchlist_repo.list_items(db, session_id)
         if items:
             lines = [
                 f"- {w.ticker}" + (f" ({w.reason_to_watch})" if w.reason_to_watch else "")
@@ -38,7 +40,7 @@ def build_context(db: Session, options: ChatContextOptions) -> str:
             blocks.append("Watchlist:\n" + "\n".join(lines))
 
     if options.include_recent_reports:
-        reports = reports_repo.list_reports(db, limit=_MAX_REPORTS)
+        reports = reports_repo.list_reports(db, session_id, limit=_MAX_REPORTS)
         if reports:
             lines = [f"- {r.title} ({r.report_type})" for r in reports]
             blocks.append("Recent reports:\n" + "\n".join(lines))

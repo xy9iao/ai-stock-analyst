@@ -15,7 +15,18 @@ class Settings(BaseSettings):
     llm_base_url: str = ""
     llm_api_key: str = ""
     llm_model: str = "deepseek-v4-flash"
+    llm_timeout_seconds: float = 60.0
     market_data_provider: str = "yfinance"
+
+    # Public-demo hardening. All OFF by default so local use is unchanged:
+    # DEMO_MODE=true enables anonymous session isolation, per-session LLM caps,
+    # and the LLM master switch (default off, enabled via the admin endpoint).
+    demo_mode: bool = False
+    admin_token: str = ""
+    demo_session_ttl_days: int = 7
+    demo_report_limit: int = 3
+    demo_chat_llm_limit: int = 20
+    llm_switch_ttl_minutes: int = 60
 
     model_config = SettingsConfigDict(
         env_file="../.env",

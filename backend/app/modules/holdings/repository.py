@@ -7,16 +7,20 @@ from app.models import Holding
 from app.modules.holdings.schemas import HoldingCreate, HoldingUpdate
 
 
-def list_holdings(db: Session) -> list[Holding]:
-    return db.scalars(select(Holding)).all()
+def list_holdings(db: Session, session_id: str) -> list[Holding]:
+    return db.scalars(select(Holding).where(Holding.session_id == session_id)).all()
 
 
-def get_holding(db: Session, holding_id: int) -> Holding | None:
-    return db.get(Holding, holding_id)
+def get_holding(db: Session, holding_id: int, session_id: str) -> Holding | None:
+    holding = db.get(Holding, holding_id)
+    # A row in another demo session's bucket is treated as nonexistent (404).
+    if holding is not None and holding.session_id != session_id:
+        return None
+    return holding
 
 
-def create_holding(db: Session, data: HoldingCreate) -> Holding:
-    holding = Holding(**data.model_dump())
+def create_holding(db: Session, data: HoldingCreate, session_id: str) -> Holding:
+    holding = Holding(**data.model_dump(), session_id=session_id)
     db.add(holding)
     db.commit()
     db.refresh(holding)  # reload so id/created_at/updated_at are populated

@@ -21,7 +21,7 @@ def fake_chat(monkeypatch: pytest.MonkeyPatch) -> _Recorder:
         rec.last_messages = messages
         return "Mock reply."
 
-    def _ctx(db, options):
+    def _ctx(db, options, session_id):
         rec.last_options = options
         return "CTX" if (options.include_holdings or options.ticker) else ""
 

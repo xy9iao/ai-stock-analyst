@@ -49,16 +49,17 @@ def _news_lines(db: Session, symbol: str) -> list[str]:
     return [f"- {item.headline} ({item.source})" for item in news.items[:_MAX_NEWS]]
 
 
-def build_single_stock_context(db: Session, ticker: str) -> str:
+def build_single_stock_context(db: Session, ticker: str, session_id: str) -> str:
     symbol = ticker.strip().upper()
     lines = [f"Ticker: {symbol}"]
 
-    holding = next((h for h in holdings_repo.list_holdings(db) if h.ticker == symbol), None)
+    holdings = holdings_repo.list_holdings(db, session_id)
+    holding = next((h for h in holdings if h.ticker == symbol), None)
     if holding is not None:
         lines.append(f"User owns {holding.shares} shares at average cost {holding.average_cost}.")
         if holding.investment_thesis:
             lines.append(f"User's thesis: {holding.investment_thesis}")
-    watch = next((w for w in watchlist_repo.list_items(db) if w.ticker == symbol), None)
+    watch = next((w for w in watchlist_repo.list_items(db, session_id) if w.ticker == symbol), None)
     if watch is not None and watch.reason_to_watch:
         lines.append(f"On watchlist — reason: {watch.reason_to_watch}")
 
@@ -81,8 +82,8 @@ def build_single_stock_context(db: Session, ticker: str) -> str:
     return "\n".join(lines)
 
 
-def build_portfolio_context(db: Session) -> str:
-    holdings = holdings_repo.list_holdings(db)
+def build_portfolio_context(db: Session, session_id: str) -> str:
+    holdings = holdings_repo.list_holdings(db, session_id)
     if not holdings:
         return "The portfolio has no holdings yet."
 
