@@ -395,3 +395,23 @@ A dead or expensive demo is worse than none; a full auth system is pure CRUD lab
 - One extra migration (`session_id` buckets + `llm_calls`); local use is unchanged (`DEMO_MODE=false`, permanent `local` bucket).
 - The LLM is off by default in the demo — it must be switched on (with a TTL) before showing it to someone.
 - The `llm_calls` log (with reserved `route`/`steps` fields) becomes the data source for post-v0 pipeline-vs-agent experiments.
+
+# Decision 010: v1 agent layer — hand-written tool-use loop, no agent frameworks
+
+## Date
+
+2026-07-03
+
+## Decision
+
+Build the v1 agent execution path as a **hand-written tool-use loop** (~100 lines: model returns tool calls → execute → append results → repeat; max 8 steps, per-call timeouts, errors fed back as tool results), routed through the existing `llm_client` gateway — **not** LangGraph/LangChain. Explicit v1 non-goals: agent frameworks, HITL gates, multi-agent, LLM-as-a-judge pipelines, fine-tuning, public/hosted MCP (local stdio only — a remote endpoint would bypass session caps and the master switch), eval dashboards, auth.
+
+## Reasoning
+
+The topology is a linear tool loop — single orchestrator, read-only tools, no branching, no checkpoint/resume, no human-in-the-loop. Framework overhead (abstractions, dependency surface, debugging through someone else's state machine) exceeds its value at this scale, and a hand-written loop is fully explainable line-by-line. The v0 gateway/observability design (`llm_calls.route`/`steps`) was pre-seeded for exactly this.
+
+## Consequences
+
+- The loop is interview-walkable and owned end-to-end; upgrading to a framework later is a rewrite of one module, not an unwind.
+- The pipeline-vs-agent comparison (Phase 13) decides routing empirically; the routing policy gets its own decision entry once measured.
+- Full scope in `docs/roadmap.md` (v1, Phases 13–15); anything not listed there is out of scope by default.

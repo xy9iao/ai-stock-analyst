@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Local-first, single-user AI stock **research** assistant (analysis & decision support — **not** a trading bot, brokerage, or execution system). Personal/portfolio project; target is an interview-grade full-stack AI system. **v0 is complete — all 12 phases** (2026-07-03), including the demo-hardened deployment layer (`DEMO_MODE`: anonymous session isolation + three-layer LLM cost defense + `llm_calls`/`/api/stats` observability — see `docs/guides/deployment.md`). New feature ideas go to GitHub issues, not v0 code; the next version (agent-focused) gets its own planning pass first.
+Local-first, single-user AI stock **research** assistant (analysis & decision support — **not** a trading bot, brokerage, or execution system). Personal/portfolio project; target is an interview-grade full-stack AI system. **v0 is shipped and frozen** (`v0.1.0`, live demo at https://ai-stock-analyst-pi.vercel.app; demo hardening: `DEMO_MODE` anonymous sessions + three-layer LLM cost defense + `llm_calls`/`/api/stats` observability — `docs/guides/deployment.md`). **The active version is v1 — Agent Layer (Phases 13–15)**, fully scoped in `docs/roadmap.md`; anything not listed there is out of scope by default. New feature ideas go to GitHub issues.
 
 This is the developer's first serious full-stack project and a learning vehicle. Build it like real production software, but keep explanations beginner-friendly when introducing a new tool or pattern.
 
@@ -18,7 +18,7 @@ Do not expect or generate per-phase "handoff" documents. Context lives in the fi
 
 ## Phase discipline
 
-**Check `docs/roadmap.md` for the current active phase.** All v0 phases (0–12) are done; **v0 is frozen**. Next up is the agent-focused version, which starts with a planning pass in `docs/planning/`.
+**Check `docs/roadmap.md` for the current active phase.** v0 (Phases 0–12) is frozen. **v1 = Phases 13–15** (agent loop + experiment, local MCP, hybrid RAG + citations, compression + injection defense) — next up is Phase 13, not started. Binding v1 rules: no agent frameworks (Decision 010), no new LLM code paths outside `llm_client`, explicit non-goals in the roadmap's v1 Principles.
 
 - Build **only** what the active phase (or an explicitly assigned GitHub issue) scopes. Do **not** add new features to v0 — deferred ideas live as issues (#14 Home news/financials, #15 ticker autocomplete, #16 E2E).
 - **Do not merge, reorder, or fast-forward phases** to "save time," even if it seems efficient. The phase-by-phase boundary is intentional — it exists so the developer can verify architectural understanding before moving on.
@@ -49,7 +49,7 @@ Modular monolith. **Backend owns everything external**: database, market-data/ne
 
 The binding rule: **every LLM call routes through `app/modules/ai/llm_client.py`** — the single OpenAI-compatible call site (`chat()` multi-turn; `complete()` delegates to it), configured by `LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL` (default `deepseek-v4-flash`, DeepSeek). This centralizes prompt construction, the financial-advice safety boundary (in the system prompt), and model switching. The `ai/` module: `context.py` (compact DB-context assembly) → `prompt_builder.py` → `llm_client.py` → `report_generator.py`; `chat/` reuses `ai/context` and the same client.
 
-v0 is **not** a multi-agent system — RAG and agent workflows were explicitly deferred (`planning/ai-design.md`) and are the planned focus of the **next version**. The v0 pattern is **simple DB-context injection**: load relevant rows from Postgres, transform into a **compact** context package (never send raw API payloads, full articles, or full financial statements to the LLM), build the prompt, call the LLM, store the Markdown result in `reports`, return it.
+The v0 pattern is **simple DB-context injection**: load relevant rows from Postgres, transform into a **compact** context package (never send raw API payloads, full articles, or full financial statements to the LLM), build the prompt, call the LLM, store the Markdown result in `reports`, return it. **v1 adds an agent path on top** (hand-written tool loop — see the roadmap's Phase 13 and Decision 010), but the binding rule is unchanged: every LLM call, pipeline or agent, goes through `llm_client`, and the `llm_calls` row records `route`/`steps`.
 
 **Report data flow:** frontend request → backend loads holdings/watchlist from DB → fetches market/news → `prompt_builder` assembles compact context → `llm_client` calls LLM → report saved as Markdown in `reports` → returned to frontend for rendering.
 
