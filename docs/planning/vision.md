@@ -1,3 +1,5 @@
+> **v0 Outcome (2026-07-02).** The "AI investment secretary" core shipped for a single user. Accounts/subscriptions/email delivery (§4–5, §9) remain unbuilt by decision — Decision 009 deliberately chose anonymous session isolation over an auth system for the public demo. Beginner/Professional modes and bilingual support stay open (Q20–Q22). §9's expansion list is historical vision, gated by the post-v1 demand rule; `docs/roadmap.md` defines actual scope.
+
 ## 1. Product Vision
 
 AI Stock Analyst aims to become a beginner-friendly AI investment research assistant that helps users understand the stock market, analyze their holdings, and make more informed investment decisions.
