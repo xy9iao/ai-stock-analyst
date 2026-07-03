@@ -376,3 +376,22 @@ The MVP will not include:
 The system may provide action labels such as Buy, Hold, Reduce, Sell, or Wait, but these are analysis outputs only.
 
 The user remains responsible for final investment decisions.
+# Decision 009: Demo deployment — anonymous sessions + three-layer LLM cost defense (no auth system)
+
+## Date
+
+2026-07-03
+
+## Decision
+
+Deploy the v0 demo on Vercel (frontend) + Render free (backend, Docker) + Neon free (Postgres). Instead of a user/auth system, use **anonymous session isolation** (cookie-scoped data buckets, 7-day TTL) behind a `DEMO_MODE` flag, and protect LLM cost with three independent layers: DeepSeek prepaid balance (hard budget cap), an admin-token master switch with a TTL (default OFF), and per-session caps counted in LLM calls. Accept the free-tier cold start; upgrade to a paid instance only during application season.
+
+## Reasoning
+
+A dead or expensive demo is worse than none; a full auth system is pure CRUD labor with zero signal for an AI-application portfolio. The demo's real requirements are state isolation and cost control — anonymous sessions deliver both in one middleware + one column. Counting caps in LLM calls (not HTTP requests) keeps the limits valid when the agent version multiplies calls per request.
+
+## Consequences
+
+- One extra migration (`session_id` buckets + `llm_calls`); local use is unchanged (`DEMO_MODE=false`, permanent `local` bucket).
+- The LLM is off by default in the demo — it must be switched on (with a TTL) before showing it to someone.
+- The `llm_calls` log (with reserved `route`/`steps` fields) becomes the data source for post-v0 pipeline-vs-agent experiments.

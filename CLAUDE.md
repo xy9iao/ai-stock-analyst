@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Local-first, single-user AI stock **research** assistant (analysis & decision support — **not** a trading bot, brokerage, or execution system). Personal/portfolio project; target is an interview-grade full-stack AI system. **v0 (MVP) is complete and feature-frozen** (2026-07-02); the only remaining v0 phase is Phase 12 (deploy-prep). New feature ideas go to GitHub issues, not v0 code; the next version (agent-focused) gets its own planning pass first.
+Local-first, single-user AI stock **research** assistant (analysis & decision support — **not** a trading bot, brokerage, or execution system). Personal/portfolio project; target is an interview-grade full-stack AI system. **v0 is complete — all 12 phases** (2026-07-03), including the demo-hardened deployment layer (`DEMO_MODE`: anonymous session isolation + three-layer LLM cost defense + `llm_calls`/`/api/stats` observability — see `docs/guides/deployment.md`). New feature ideas go to GitHub issues, not v0 code; the next version (agent-focused) gets its own planning pass first.
 
 This is the developer's first serious full-stack project and a learning vehicle. Build it like real production software, but keep explanations beginner-friendly when introducing a new tool or pattern.
 
@@ -18,7 +18,7 @@ Do not expect or generate per-phase "handoff" documents. Context lives in the fi
 
 ## Phase discipline
 
-**Check `docs/roadmap.md` for the current active phase.** Phases 0–11 are done; **v0 is feature-frozen** — only Phase 12 (deploy-prep) remains, and it must be planned before it's built.
+**Check `docs/roadmap.md` for the current active phase.** All v0 phases (0–12) are done; **v0 is frozen**. Next up is the agent-focused version, which starts with a planning pass in `docs/planning/`.
 
 - Build **only** what the active phase (or an explicitly assigned GitHub issue) scopes. Do **not** add new features to v0 — deferred ideas live as issues (#14 Home news/financials, #15 ticker autocomplete, #16 E2E).
 - **Do not merge, reorder, or fast-forward phases** to "save time," even if it seems efficient. The phase-by-phase boundary is intentional — it exists so the developer can verify architectural understanding before moving on.

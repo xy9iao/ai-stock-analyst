@@ -11,6 +11,12 @@ A **local-first, AI-powered stock research assistant** — track your holdings a
 
 > **Disclaimer:** This project is for **research and educational use only** — it is not a trading bot, brokerage app, or financial advice. Market data may be delayed or inaccurate; verify independently before making decisions.
 
+## Live Demo
+
+🔗 **Demo:** _link coming soon_ (deploying via [the deployment guide](docs/guides/deployment.md))
+
+The demo is a shared, unauthenticated instance hardened for public exposure: every visitor gets an isolated **anonymous session** (cookie-scoped data, 7-day TTL — no account needed), and LLM cost is protected by **three independent layers**: a prepaid budget hard cap, an admin-controlled master switch with a TTL, and per-session limits (3 reports / 20 chat replies, counted in LLM calls). First load may take up to a minute if the free-tier backend was asleep. Use **"New demo session"** in the footer to start fresh.
+
 ## Screenshots
 
 | Holdings | Stock detail |
@@ -29,6 +35,7 @@ A **local-first, AI-powered stock research assistant** — track your holdings a
 - **AI reports** — single-stock and portfolio research reports: the backend assembles a compact context from your data, calls the LLM (DeepSeek, OpenAI-compatible), and stores the result as Markdown — exportable with one click.
 - **Chat** — a multi-turn investment assistant with **toggleable context injection** (holdings / watchlist / a focus ticker / recent reports), so you control exactly what the model sees.
 - **Beginner-friendly UI** — finance-term tooltips, loading/empty/error states, responsive layout, and a persistent not-financial-advice notice.
+- **Demo-hardened deployment** — anonymous session isolation (state isolation without an auth system), a three-layer LLM cost defense, and per-call token/latency observability (`llm_calls` table + `/api/stats`).
 
 ## Architecture
 
@@ -51,7 +58,7 @@ Key design decisions:
 - **Compact context injection** — the LLM receives small, curated context blocks built from Postgres (never raw API payloads or full articles). RAG/agent workflows are deliberately deferred to keep v0 explainable.
 - **AI report data flow:** request → load holdings/watchlist from DB → fetch cached market/news → `prompt_builder` assembles compact context → `llm_client` calls the LLM → Markdown saved to `reports` → rendered in the frontend.
 
-More depth in the guides: [Backend](docs/guides/backend.md) · [API](docs/guides/api.md) · [Database](docs/guides/database.md) · [Frontend & design system](docs/guides/frontend.md) · [Development workflow](docs/guides/development-workflow.md)
+More depth in the guides: [Backend](docs/guides/backend.md) · [API](docs/guides/api.md) · [Database](docs/guides/database.md) · [Frontend & design system](docs/guides/frontend.md) · [Development workflow](docs/guides/development-workflow.md) · [Deployment](docs/guides/deployment.md)
 
 ## Tech Stack
 
@@ -140,13 +147,12 @@ CI (GitHub Actions) enforces exactly these gates on every push/PR: backend **ruf
 
 ## Status & Roadmap
 
-**v0 (MVP) is complete** — Phases 0–10: planning, repo/CI setup, backend + DB foundation, holdings/watchlist CRUD, market data, news/financials, AI reports, chat, Markdown export, UI polish, and the test suites. History in the [CHANGELOG](CHANGELOG.md); detailed phase scopes in the [roadmap](docs/roadmap.md).
+**v0 is complete** — all 12 phases: planning, repo/CI setup, backend + DB foundation, holdings/watchlist CRUD, market data, news/financials, AI reports, chat, Markdown export, UI polish, test suites, README, and the demo-hardened deployment. History in the [CHANGELOG](CHANGELOG.md); phase summaries in the [roadmap](docs/roadmap.md).
 
 **Next up**
 
-- Deployment preparation (Phase 12)
 - Backlog: news + financials on the Home page ([#14](https://github.com/xy9iao/ai-stock-analyst/issues/14)), ticker autocomplete ([#15](https://github.com/xy9iao/ai-stock-analyst/issues/15)), Playwright E2E ([#16](https://github.com/xy9iao/ai-stock-analyst/issues/16))
-- **Post-v0:** agent-based research workflows (multi-step analysis, automated news digging) — deliberately deferred from v0 in favor of a simple, explainable context-injection design
+- **Post-v0:** agent-based research workflows (multi-step analysis, automated news digging) — deliberately deferred from v0 in favor of a simple, explainable context-injection design. The `llm_calls` log already carries `route`/`steps` fields for the pipeline-vs-agent comparison experiments.
 
 ## Contributing
 
