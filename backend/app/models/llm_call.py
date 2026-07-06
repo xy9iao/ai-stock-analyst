@@ -20,6 +20,7 @@ class LlmCall(SessionScopedMixin, TimestampMixin, Base):
     model: Mapped[str] = mapped_column(String(120), nullable=False)
     prompt_tokens: Mapped[int | None] = mapped_column(Integer)
     completion_tokens: Mapped[int | None] = mapped_column(Integer)
+    cached_tokens: Mapped[int | None] = mapped_column(Integer)  # provider cache hits (Phase 13)
     latency_ms: Mapped[int] = mapped_column(Integer, nullable=False)
     route: Mapped[str | None] = mapped_column(String(40))
     steps: Mapped[int | None] = mapped_column(Integer)
