@@ -123,6 +123,39 @@ def chat(
     return response.choices[0].message.content or ""
 
 
+def chat_message(
+    messages: list[dict],
+    *,
+    tools: list[dict] | None = None,
+    temperature: float = 0.6,
+    db: Session | None = None,
+    session_id: str = "local",
+    kind: str = "research",
+    route: str | None = None,
+    step: int | None = None,
+):
+    """Gateway entry for tool-calling turns: returns the FULL assistant message
+    (so callers can read `.tool_calls`), unlike chat() which returns text.
+
+    TODO(owner, gateway seam): implement per the design lesson (§3, shape (a)):
+      - share ONE execution core with chat(): api-key check + demo master-switch
+        check + timeout + AppError wrapping must run for every call — refactor
+        the shared part out of chat() rather than duplicating it
+      - pass `tools=tools` to the OpenAI call only when provided
+      - record the llm_calls row for every call, now including:
+          cached_tokens  <- usage.prompt_tokens_details.cached_tokens,
+                            falling back to usage.prompt_cache_hit_tokens
+                            (spike: both fields exist, same number)
+          route, steps   <- the new route/step arguments (D7)
+        which means extending _record_call's signature — keep it best-effort
+        (a logging failure must never break the reply)
+      - return response.choices[0].message unchanged
+      - then make chat() delegate to the same core so there is still exactly
+        one code path that talks to the provider
+    """
+    raise NotImplementedError  # TODO(owner)
+
+
 def complete(
     system: str,
     user: str,
