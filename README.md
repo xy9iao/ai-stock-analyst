@@ -152,7 +152,7 @@ CI (GitHub Actions) enforces exactly these gates on every push/PR: backend **ruf
 **Next up**
 
 - Backlog: news + financials on the Home page ([#14](https://github.com/xy9iao/ai-stock-analyst/issues/14)), ticker autocomplete ([#15](https://github.com/xy9iao/ai-stock-analyst/issues/15)), Playwright E2E ([#16](https://github.com/xy9iao/ai-stock-analyst/issues/16))
-- **Post-v0:** agent-based research workflows (multi-step analysis, automated news digging) — deliberately deferred from v0 in favor of a simple, explainable context-injection design. The `llm_calls` log already carries `route`/`steps` fields for the pipeline-vs-agent comparison experiments.
+- **v1 (in progress):** agent-based research workflows — a hand-written tool-use loop powering an open-ended Research endpoint, hybrid RAG with cited reports, context compression, and injection defense. The `llm_calls` log already carries `route`/`steps` fields, which the agent path fills for per-route cost observability.
 
 ## Contributing
 
