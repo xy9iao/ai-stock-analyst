@@ -419,3 +419,25 @@ The topology is a linear tool loop — single orchestrator, read-only tools, no 
 - The loop is interview-walkable and owned end-to-end; upgrading to a framework later is a rewrite of one module, not an unwind.
 - The pipeline-vs-agent comparison (Phase 13) decides routing empirically; the routing policy gets its own decision entry once measured.
 - Full scope in `docs/roadmap.md` (v1, Phases 13–15); anything not listed there is out of scope by default.
+
+---
+
+# Decision 011: Routing by request type is a design decision, not an experiment outcome — and chat stays non-agentic
+
+## Date
+
+2026-07-06
+
+## Decision
+
+Route by **request type**: closed data needs (`single_stock`/`portfolio` reports) → the fixed pipeline (`route='pipeline'`); open-ended forensics (`research`) → the agent loop (`route='agent'`). **Chat keeps single-call, fixed toggleable context injection — the agent loop is never wired into chat.** The planned pipeline-vs-agent comparison experiment is removed; this supersedes the line in Decision 010's consequences that said the comparison experiment would decide routing empirically (the eval-harness project owns the "experiments" story).
+
+## Reasoning
+
+Standard reports' data needs are fully known at design time, so a fixed pipeline is strictly cheaper and more consistent there — no measurement needed to know a loop adds cost without adding coverage. Open-ended research has forked evidence paths that depend on what the previous step revealed, which is precisely the case for handing control flow to the model. Chat's contract is fast/cheap/ephemeral: a per-message 8-step loop would multiply latency and cost and burn the 20-call session cap in two messages; the composition path (agent produces an archived memo → chat consumes it via `include_recent_reports`) delivers the same value on the cheap path.
+
+## Consequences
+
+- The router is an if-statement on `report_type`; its justification lives here, not in a results table.
+- Research memos are archived through the existing reports path and counted by the existing per-session report cap.
+- The three service tiers (Report / Research / Chat) are a product contract — recorded in the roadmap's Phase 13 section — and compose rather than merge.
