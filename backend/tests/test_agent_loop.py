@@ -46,7 +46,9 @@ def test_execute_tool_success(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setitem(
         tools.TOOLS,
         "get_financials",
-        tools.ToolSpec(lambda db, session_id, ticker: f"{ticker} ok", tools.TOOLS["get_financials"].schema),
+        tools.ToolSpec(
+            lambda db, session_id, ticker: f"{ticker} ok", tools.TOOLS["get_financials"].schema
+        ),
     )
     call = _tool_call("c1", "get_financials", json.dumps({"ticker": "NVDA"}))
     assert loop._execute_tool_call(None, "s", call) == "NVDA ok"
@@ -124,7 +126,9 @@ def test_parallel_batch_bookkeeping(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setitem(
         tools.TOOLS,
         "get_financials",
-        tools.ToolSpec(lambda db, session_id, ticker: "fin ok", tools.TOOLS["get_financials"].schema),
+        tools.ToolSpec(
+            lambda db, session_id, ticker: "fin ok", tools.TOOLS["get_financials"].schema
+        ),
     )
 
     result = loop.run_research(None, "sess", "compare")

@@ -1,4 +1,4 @@
-"""The Research Agent's hand-written tool-use loop (ReAct-shaped). Core module — owner-written.
+"""The Research Agent's hand-written tool-use loop (ReAct-shaped).
 
 Drives the tool-calling conversation shape:
 
@@ -17,9 +17,9 @@ from sqlalchemy.orm import Session
 
 from app.modules.ai.agent.tools import TOOLS  # noqa: F401 — used by the owner's implementation
 
-from app.core.errors import AppError
-
 import json
+
+from app.core.errors import AppError
 
 MAX_STEPS = 8
 
@@ -68,16 +68,10 @@ def run_research(db: Session, session_id: str, query: str) -> ResearchResult:
 def _execute_tool_call(db: Session, session_id: str, tool_call: object) -> str:
     """Execute one tool call and return the tool-result text. Never raises (D5).
 
-    TODO(owner): errors are data —
-      - arguments are model-generated JSON text: json.loads may fail
-        -> return "Error: malformed arguments ..." naming the problem
-      - unknown tool name (model hallucination) -> "Error: unknown tool ...,
-        valid tools: ..." so the model can steer
-      - AppError from a service (e.g. unknown ticker) -> its message as
-        "Error: ..." (specific text is what lets the model route around)
-      - any other Exception -> generic "Error: tool failed: ..."
-      - success -> the tool's compact string output, unchanged
-    Bind db + session_id; look up the callable in TOOLS.
+    Errors are data: malformed model-generated arguments, hallucinated tool
+    names, service AppErrors, and unexpected exceptions all come back as
+    "Error: ..." strings — specific text is what lets the model route around
+    a failure and keeps the loop alive.
     """
     name = tool_call.function.name
     if name not in TOOLS:
@@ -85,12 +79,10 @@ def _execute_tool_call(db: Session, session_id: str, tool_call: object) -> str:
 
     try:
         args = json.loads(tool_call.function.arguments)
-
         spec = TOOLS[name]
         return spec.fn(db, session_id, **args)
-
     except json.JSONDecodeError as e:
-        return f"Error: {name} malform arguments: {tool_call.function.arguments} has {e}"
+        return f"Error: {name} malformed arguments: {tool_call.function.arguments} has {e}"
     except AppError as e:
         return "Error: " + e.message
     except Exception as e:
