@@ -60,8 +60,6 @@ Anything worth archiving goes to Reports (pipeline = routine checkup, research =
 
 **Acceptance:** a research query from the UI produces an archived memo with a visible tool-call trace in logs; parallel tool calls, tool failures, malformed arguments, and step overflow all handled per 13.2 (three failure-injection tests exist); `cached_tokens` recorded and aggregated with a measured saving; worst-case cost math in the PR; regression set runs with one command.
 
-**Learning-Gated tier split (binding):** **Core (owner-written):** `loop.py` · the `llm_client` tools-parameter seam · static-prefix placement · regression scoring script. **Periphery (CC-written):** 5 tool wrappers · `indicators.py` · router dispatch + schema changes · migration · frontend query box · regression runner scaffolding · `/api/stats` aggregation. **Tier K (owner studies during periphery work):** LangGraph's concrete feature set (defend the rejection: graph state, checkpointing/resume, interrupts, retries) · ReAct terminology · DeepSeek function-calling + context-caching docs · one-line definitions of the shipped indicators.
-
 **Demand-gated futures (recorded, NOT built — gate: same pain 3+ times in real use):** "Discuss this memo" button (opens chat with `include_recent_reports` pre-toggled) · unified input box with a Chat/Research mode switch · thesis patrol ("did this week's news shake my NVDA thesis?", using the dormant `investment_thesis` field).
 
 ### Phase 13.5 — MCP Wrapper (local stdio only)
