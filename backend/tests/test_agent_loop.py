@@ -1,5 +1,5 @@
 """Scaffolded tests for the owner-written loop (PR-2). Start all-red; implement
-until green, one test at a time — they encode the D1–D7 decisions as a spec.
+until green, one test at a time — they encode the loop's design contract as a spec.
 
 The gateway is faked by monkeypatching `llm_client.chat_message`, so write the
 loop calling it module-attribute style (`llm_client.chat_message(...)`), matching
@@ -39,7 +39,7 @@ class FakeGateway:
         return self.script.pop(0)
 
 
-# --- _execute_tool_call (D5: errors are data, never raised) ---
+# --- _execute_tool_call (errors come back as data, never raised) ---
 
 
 def test_execute_tool_success(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -107,7 +107,7 @@ def test_natural_exit_returns_memo_and_steps(monkeypatch: pytest.MonkeyPatch) ->
     assert messages[0]["role"] == "system"
     assert messages[0]["content"] == loop.SYSTEM_PROMPT  # static, byte-stable prefix
     assert any("NVDA" in str(m.get("content")) for m in messages if m["role"] == "user")
-    # D7: route/step attribution on every gateway call
+    # route/step attribution on every gateway call
     assert first_call["kwargs"].get("route") == "agent"
     assert first_call["kwargs"].get("step") == 1
     # tools offered on normal steps
@@ -136,7 +136,7 @@ def test_parallel_batch_bookkeeping(monkeypatch: pytest.MonkeyPatch) -> None:
 
     # Inspect the messages as seen by the SECOND gateway call:
     messages = fake.calls[1]["messages"]
-    # D4: the assistant turn is appended BEFORE its tool results...
+    # the assistant turn is appended BEFORE its tool results...
     roles = [m["role"] if isinstance(m, dict) else getattr(m, "role", "?") for m in messages]
     assistant_idx = roles.index("assistant")
     assert roles[assistant_idx + 1] == "tool" and roles[assistant_idx + 2] == "tool"
@@ -144,7 +144,7 @@ def test_parallel_batch_bookkeeping(monkeypatch: pytest.MonkeyPatch) -> None:
     tool_msgs = [m for m in messages if isinstance(m, dict) and m.get("role") == "tool"]
     assert [m["tool_call_id"] for m in tool_msgs] == ["id_a", "id_b"]
     assert tool_msgs[0]["content"] == "fin ok"
-    assert tool_msgs[1]["content"].startswith("Error")  # D5: fed back, loop continued
+    assert tool_msgs[1]["content"].startswith("Error")  # error fed back, loop continued
 
 
 def test_step_limit_forces_final_answer(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -161,13 +161,13 @@ def test_step_limit_forces_final_answer(monkeypatch: pytest.MonkeyPatch) -> None
     )
 
     result = loop.run_research(None, "sess", "q")
-    # D2: the budget bounds TOTAL gateway calls, forced answer included.
+    # the budget bounds TOTAL gateway calls, forced answer included.
     assert result.steps == loop.MAX_STEPS
     assert result.step_limit_hit is True
     assert "partial memo" in result.memo
-    assert "step limit" in result.memo.lower()  # D3: explicit note in the memo
+    assert "step limit" in result.memo.lower()  # explicit note in the memo
 
-    # D3: the forced final call must OMIT tools (mechanism, not instruction).
+    # the forced final call must OMIT tools (mechanism, not instruction).
     final_kwargs = fake.calls[-1]["kwargs"]
     assert not final_kwargs.get("tools")
     # Every prior call offered tools.
