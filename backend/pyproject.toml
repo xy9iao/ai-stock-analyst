@@ -29,6 +29,8 @@ package = false
 
 [tool.ruff]
 line-length = 100
+# Applied migrations are generated + frozen; formatting must not touch them.
+extend-exclude = ["alembic/versions"]
 target-version = "py312"
 
 [tool.pytest.ini_options]
