@@ -4,7 +4,7 @@ Drives the tool-calling conversation shape:
 
     system -> user -> assistant(tool_calls) -> tool results (one per id) -> ... -> assistant(content)
 
-Design decisions D1–D7 are in the Phase 13 design lesson; each TODO below marks
+Design decisions D1-D7 are in the Phase 13 design lesson; each TODO below marks
 one of them. Binding constraints: every LLM call goes through the llm_client
 gateway (never instantiate a client here); messages are append-only (prefix
 caching depends on it); errors inside tools are fed back as tool results, never
@@ -16,6 +16,10 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from app.modules.ai.agent.tools import TOOLS  # noqa: F401 — used by the owner's implementation
+
+from app.core.errors import AppError
+
+import json
 
 MAX_STEPS = 8
 
@@ -75,4 +79,19 @@ def _execute_tool_call(db: Session, session_id: str, tool_call: object) -> str:
       - success -> the tool's compact string output, unchanged
     Bind db + session_id; look up the callable in TOOLS.
     """
-    raise NotImplementedError  # TODO(owner)
+    name = tool_call.function.name
+    if name not in TOOLS:
+        return f"Error: unknown tool name. Valid tools: {', '.join(TOOLS)}"
+
+    try:
+        args = json.loads(tool_call.function.arguments)
+
+        spec = TOOLS[name]
+        return spec.fn(db, session_id, **args)
+
+    except json.JSONDecodeError as e:
+        return f"Error: {name} malform arguments: {tool_call.function.arguments} has {e}"
+    except AppError as e:
+        return "Error: " + e.message
+    except Exception as e:
+        return f"Error: tool failed: {e}"
