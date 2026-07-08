@@ -1,9 +1,8 @@
-"""Scaffolded tests for the owner-written loop (PR-2). Start all-red; implement
-until green, one test at a time — they encode the loop's design contract as a spec.
+"""Tests for the Research Agent loop — they encode its design contract as a spec.
 
-The gateway is faked by monkeypatching `llm_client.chat_message`, so write the
-loop calling it module-attribute style (`llm_client.chat_message(...)`), matching
-the repo idiom — a `from ... import chat_message` binding would dodge the patch.
+The gateway is faked by monkeypatching `llm_client.chat_message`; the loop calls
+it module-attribute style (repo idiom), which is what makes the patch land — a
+`from ... import chat_message` binding would bypass it.
 """
 
 import json
