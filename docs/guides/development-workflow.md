@@ -72,6 +72,15 @@ Even for a solo project, pull requests are useful because they:
 - create a review point
 - keep `main` cleaner
 
+## Phase Close-Out
+
+When a phase's implementation is finished, close it out in the same response that completes it:
+
+1. **Update `docs/guides/`** — bring `backend.md` / `database.md` / `api.md` (and `frontend.md` when the UI changed) into line with the code as it now stands.
+2. **Append to `CHANGELOG.md`** (repo root) — a short entry for the completed phase: what was built, files added, key decisions.
+
+This keeps the guides trustworthy (they describe the code as it exists) and the CHANGELOG the accurate build history.
+
 ## Python Virtual Environments
 
 A Python virtual environment is a project-local Python environment. It prevents one project's packages from interfering with another project's packages.

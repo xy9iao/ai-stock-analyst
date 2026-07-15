@@ -5,7 +5,7 @@ Single source of truth for project progress and the active phase's scope. Check 
 ## Current Status
 
 - **v0 shipped and frozen** — all 12 phases done, released as `v0.1.0`, live at https://ai-stock-analyst-pi.vercel.app. Bug fixes only.
-- **Active version: v1 — Agent Layer (Phases 13–15), planned below.** Next up: **Phase 13** (not started — produce a plan for review before any code, per phase discipline).
+- **Active version: v1 — Agent Layer (Phases 13–15), planned below.** **Phase 13 in progress** on `phase-13-loop` (tool layer + agent loop underway; dated work log in `CHANGELOG.md`).
 - Anything not listed in the v1 plan is **out of scope by default**; deferred ideas stay as GitHub issues.
 
 ## v1 — Agent Layer, MCP, RAG, Context & Injection Defense (Phases 13–15)
@@ -15,13 +15,14 @@ Single source of truth for project progress and the active phase's scope. Check 
 - This is a **personally used, long-term maintained** product — every feature below is justified by a real usage need, not resume keywords.
 - **Reuse the v0 infrastructure:** the single `llm_client` gateway, the `llm_calls` table (its nullable `route`/`steps` columns get filled starting Phase 13), session isolation, per-session caps, and the LLM master switch. **No new parallel code paths for LLM calls.**
 - **Explicit non-goals for all of v1:** LangGraph/LangChain, HITL gates, multi-agent, LLM-as-a-judge pipelines, fine-tuning, public/hosted MCP, eval dashboards, auth system.
+- **Learning-gated:** every phase section below declares its Core/Periphery/Tier-K split (Phase 13's is in place; 14/15 declare theirs at kickoff). The fixed v1 core list — do not expand it mid-phase: the agent loop module · tool schema/execution seam · RRF fusion + the hybrid retrieval query · the chunking function + its size/overlap parameters · retrieved-content demarcation & sanitization · context-compression logic · the summarization prompt + trigger design · prompt-cache breakpoint placement + prompt ordering · the regression scoring script. (The request-type router is periphery; its *decision* is Decision 011 — the code is an if-statement.)
 - After Phase 15 closes, the project enters **demand-gated maintenance mode**: a new feature requires the same pain point 3+ times in real use; full feature freeze during application season (bug fixes only). This rule gets written into CLAUDE.md at close-out.
 
 ### v1 Phase Overview
 
 | Phase | Content | Est. | Status |
 |-------|---------|------|--------|
-| 13 | Tool layer → hand-written agent loop (Research Agent) → regression set | ~1 week | not started ← next |
+| 13 | Tool layer → hand-written agent loop (Research Agent) → regression set | ~1 week | in progress ← active |
 | 13.5 | FastMCP local wrapper (stdio only) | 1 day | not started |
 | 14 | RAG: ingestion → hybrid retrieval (pgvector + FTS→BM25, RRF) → cited reports | ~4 days | not started |
 | 15 | Long-chat compression + indirect-injection defense | 2–3 days | not started |
