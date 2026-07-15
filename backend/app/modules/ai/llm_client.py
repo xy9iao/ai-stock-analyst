@@ -11,6 +11,7 @@ import logging
 import time
 
 from openai import OpenAI
+from openai.types.chat import ChatCompletionMessage
 from sqlalchemy.orm import Session
 
 from app.core import llm_switch
@@ -36,6 +37,9 @@ def _record_call(
     latency_ms: int,
     prompt_tokens: int | None,
     completion_tokens: int | None,
+    cached_tokens: int | None = None,
+    route: str | None = None,
+    steps: int | None = None,
 ) -> None:
     """Best-effort observability — a logging failure must never break the reply."""
     from app.models import LlmCall  # local import to keep module import cheap
@@ -56,7 +60,10 @@ def _record_call(
                 model=settings.llm_model,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
+                cached_tokens=cached_tokens,
                 latency_ms=latency_ms,
+                route=route,
+                steps=steps,
             )
         )
         db.commit()
@@ -79,48 +86,14 @@ def chat(
     Missing key -> AppError(503); demo switch off -> AppError(503);
     any LLM/network failure -> AppError(502).
     """
-    if not settings.llm_api_key:
-        raise AppError(
-            code="llm_not_configured",
-            message="LLM_API_KEY is not set",
-            status_code=503,
-        )
-    # Cost-defense layer 2: in demo mode the LLM is OFF unless the admin
-    # switch was turned on (and its TTL hasn't expired).
-    if settings.demo_mode and db is not None and not llm_switch.is_enabled(db):
-        raise AppError(
-            code="llm_disabled",
-            message="The demo LLM is currently switched off. Please try again later.",
-            status_code=503,
-        )
-
-    started = time.monotonic()
-    try:
-        response = _client().chat.completions.create(
-            model=settings.llm_model,
-            messages=messages,
-            temperature=temperature,
-        )
-    except Exception as exc:  # openai raises varied errors (auth, rate limit, network)
-        raise AppError(
-            code="llm_error",
-            message=f"LLM request failed: {exc}",
-            status_code=502,
-        ) from exc
-    latency_ms = int((time.monotonic() - started) * 1000)
-
-    usage = getattr(response, "usage", None)
-    if db is not None:
-        _record_call(
-            db,
-            session_id=session_id,
-            kind=kind,
-            latency_ms=latency_ms,
-            prompt_tokens=getattr(usage, "prompt_tokens", None),
-            completion_tokens=getattr(usage, "completion_tokens", None),
-        )
-
-    return response.choices[0].message.content or ""
+    msg = chat_message(
+        messages,
+        temperature=temperature,
+        db=db,
+        session_id=session_id,
+        kind=kind,
+    )
+    return msg.content or ""
 
 
 def chat_message(
@@ -133,27 +106,74 @@ def chat_message(
     kind: str = "research",
     route: str | None = None,
     step: int | None = None,
-):
-    """Gateway entry for tool-calling turns: returns the FULL assistant message
-    (so callers can read `.tool_calls`), unlike chat() which returns text.
+) -> ChatCompletionMessage:
+    """Run a completion and return the full assistant message.
 
-    TODO(owner, gateway seam): implement per the design lesson (§3, shape (a)):
-      - share ONE execution core with chat(): api-key check + demo master-switch
-        check + timeout + AppError wrapping must run for every call — refactor
-        the shared part out of chat() rather than duplicating it
-      - pass `tools=tools` to the OpenAI call only when provided
-      - record the llm_calls row for every call, now including:
-          cached_tokens  <- usage.prompt_tokens_details.cached_tokens,
-                            falling back to usage.prompt_cache_hit_tokens
-                            (spike: both fields exist, same number)
-          route, steps   <- the new route/step arguments (D7)
-        which means extending _record_call's signature — keep it best-effort
-        (a logging failure must never break the reply)
-      - return response.choices[0].message unchanged
-      - then make chat() delegate to the same core so there is still exactly
-        one code path that talks to the provider
+    The gateway's execution core: chat()/complete() delegate here, and the
+    agent loop calls it directly to read `.tool_calls` off the result.
+    `tools` (OpenAI function schemas) is forwarded to the provider only when
+    provided; `route`/`step` are recorded on the llm_calls row.
+
+    Missing key -> AppError(503); demo switch off -> AppError(503);
+    any LLM/network failure -> AppError(502).
     """
-    raise NotImplementedError  # TODO(owner)
+    if not settings.llm_api_key:
+        raise AppError(
+            code="llm_not_configured",
+            message="LLM_API_KEY is not set",
+            status_code=503,
+        )
+
+    if settings.demo_mode and db is not None and not llm_switch.is_enabled(db):
+        raise AppError(
+            code="llm_disabled",
+            message="The demo LLM is currently switched off. Please try again later.",
+            status_code=503,
+        )
+
+    kwargs: dict = {
+        "model": settings.llm_model,
+        "messages": messages,
+        "temperature": temperature,
+    }
+    if tools:
+        kwargs["tools"] = tools
+
+    started = time.monotonic()
+    try:
+        response = _client().chat.completions.create(**kwargs)
+    except Exception as exc:  # openai raises varied errors (auth, rate limit, network)
+        raise AppError(
+            code="llm_error",
+            message=f"LLM request failed: {exc}",
+            status_code=502,
+        ) from exc
+    latency_ms = int((time.monotonic() - started) * 1000)
+
+    usage = getattr(response, "usage", None)
+
+    # Cache-hit count: OpenAI reports usage.prompt_tokens_details.cached_tokens;
+    # DeepSeek reports usage.prompt_cache_hit_tokens. Either level may be absent
+    # or None depending on the provider, hence the guarded hops.
+    details = getattr(usage, "prompt_tokens_details", None)
+    cached_tokens = getattr(details, "cached_tokens", None)
+    if cached_tokens is None:
+        cached_tokens = getattr(usage, "prompt_cache_hit_tokens", None)
+
+    if db is not None:
+        _record_call(
+            db,
+            session_id=session_id,
+            kind=kind,
+            latency_ms=latency_ms,
+            prompt_tokens=getattr(usage, "prompt_tokens", None),
+            completion_tokens=getattr(usage, "completion_tokens", None),
+            cached_tokens=cached_tokens,
+            route=route,
+            steps=step,
+        )
+
+    return response.choices[0].message
 
 
 def complete(
