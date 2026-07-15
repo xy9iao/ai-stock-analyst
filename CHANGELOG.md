@@ -1,8 +1,18 @@
 # Changelog
 
-Build history by phase — the **accurate, frozen record** of what was actually built, newest first. The active phase lives in `docs/roadmap.md`. Per the per-phase handoff rules in `CLAUDE.md`, append a new section here when a phase is finished.
+Build history by phase — the **accurate, frozen record** of what was actually built, newest first. The active phase lives in `docs/roadmap.md`. Per the Phase close-out rules in `CLAUDE.md`, append a new section here when a phase is finished; the active phase keeps a dated work log at the top until then.
 
 **v0 at a glance (June – July 2026):** Phases 0–11 delivered a local-first AI stock research assistant — holdings/watchlist CRUD → market data (provider abstraction + cache) → news/financials → AI reports (single LLM gateway, compact context injection) → multi-turn chat → Markdown export → UI polish/design system → test suites (43 backend + 28 frontend) → the public README. Plus off-roadmap: one-command Docker dev, the frontend MVP UI, ESLint/CI hardening. v0 was declared **feature-frozen on 2026-07-02**; Phase 12 (deploy-prep) remains.
+
+## Phase 13 — Research Agent (in progress)
+
+Dated work log; the full phase entry replaces this section at close-out.
+
+- **2026-07-06** — PR-2 started: `ai/agent/loop.py` skeleton + 8 red scaffold tests committed; implementation milestones set (`_execute_tool_call` → `SYSTEM_PROMPT` → `run_research` → `llm_client` gateway seam).
+- **2026-07-06** — `_execute_tool_call` implemented, 5/5 tests green on first run; review fixes applied. Single-commit unit workflow adopted (implementation + polish land as one commit per unit).
+- **2026-07-06** — `SYSTEM_PROMPT` finalized after two review rounds; the financial-advice boundary text verified byte-identical to `prompt_builder`'s.
+- **2026-07-14** — `run_research` implemented; gateway `chat_message` test scaffold added.
+- **2026-07-15** — doc cleanup: CLAUDE.md slimmed (close-out checklist → `development-workflow.md`), workflow updated to solution-first delivery with owner-reviewed cleanup diffs.
 
 ## Phase 13 rewrite — Research Agent (planning, 2026-07-06)
 
