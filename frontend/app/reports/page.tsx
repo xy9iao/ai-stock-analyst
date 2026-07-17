@@ -23,6 +23,7 @@ export default function ReportsPage() {
   const [selected, setSelected] = useState<Report | null>(null);
   const [reportType, setReportType] = useState<ReportType>("single_stock");
   const [ticker, setTicker] = useState("");
+  const [query, setQuery] = useState("");
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +47,7 @@ export default function ReportsPage() {
       const report = await generateReport({
         report_type: reportType,
         ticker: reportType === "single_stock" ? ticker : undefined,
+        query: reportType === "research" ? query : undefined,
       });
       setSelected(report);
       await refresh();
@@ -82,6 +84,13 @@ export default function ReportsPage() {
           >
             Portfolio
           </Button>
+          <Button
+            type="button"
+            onClick={() => setReportType("research")}
+            className={reportType === "research" ? "border-emerald-600 text-emerald-700" : ""}
+          >
+            Research
+          </Button>
           {reportType === "single_stock" ? (
             <Input
               className="w-44"
@@ -91,8 +100,24 @@ export default function ReportsPage() {
               required
             />
           ) : null}
+          {reportType === "research" ? (
+            <Input
+              className="w-full min-w-64 flex-1"
+              placeholder="Ask an open-ended question (e.g. why did NVDA drop this week?)"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              maxLength={500}
+              required
+            />
+          ) : null}
           <Button type="submit" variant="primary" disabled={generating}>
-            {generating ? "Generating… (~30s)" : "Generate report"}
+            {generating
+              ? reportType === "research"
+                ? "Researching… (10–20s)"
+                : "Generating… (~30s)"
+              : reportType === "research"
+                ? "Run research"
+                : "Generate report"}
           </Button>
         </form>
 

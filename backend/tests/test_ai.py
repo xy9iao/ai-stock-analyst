@@ -7,6 +7,8 @@ from fastapi.testclient import TestClient
 
 from app.core.errors import AppError
 from app.modules.ai import context, llm_client
+from app.modules.ai.agent import loop
+from app.modules.ai.agent.loop import ResearchResult
 
 
 @pytest.fixture
@@ -16,6 +18,17 @@ def fake_ai(monkeypatch: pytest.MonkeyPatch) -> None:
         context, "build_single_stock_context", lambda db, ticker, session_id: f"ctx:{ticker}"
     )
     monkeypatch.setattr(context, "build_portfolio_context", lambda db, session_id: "portfolio ctx")
+
+
+@pytest.fixture
+def fake_agent(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        loop,
+        "run_research",
+        lambda db, session_id, query: ResearchResult(
+            memo=f"# Memo\n\nEvidence for: {query}", steps=3, step_limit_hit=False
+        ),
+    )
 
 
 def test_generate_single_stock_report(client: TestClient, fake_ai: None) -> None:
@@ -38,6 +51,33 @@ def test_generate_portfolio_report(client: TestClient, fake_ai: None) -> None:
 def test_single_stock_requires_ticker(client: TestClient, fake_ai: None) -> None:
     res = client.post("/api/reports", json={"report_type": "single_stock"})
     assert res.status_code == 422  # rejected by the schema validator, before any LLM call
+
+
+def test_generate_research_memo(client: TestClient, fake_agent: None) -> None:
+    query = "why did NVDA drop this week?"
+    res = client.post("/api/reports", json={"report_type": "research", "query": query})
+    assert res.status_code == 201
+    body = res.json()
+    assert body["report_type"] == "research"
+    assert body["title"] == query
+    assert "Evidence for: why did NVDA drop this week?" in body["content_markdown"]
+
+
+def test_research_requires_query(client: TestClient, fake_agent: None) -> None:
+    res = client.post("/api/reports", json={"report_type": "research"})
+    assert res.status_code == 422
+
+    res = client.post("/api/reports", json={"report_type": "research", "query": "   "})
+    assert res.status_code == 422
+
+
+def test_research_title_truncated(client: TestClient, fake_agent: None) -> None:
+    query = "x" * 120
+    res = client.post("/api/reports", json={"report_type": "research", "query": query})
+    assert res.status_code == 201
+    title = res.json()["title"]
+    assert len(title) == 80
+    assert title.endswith("…")
 
 
 def test_list_and_get_reports(client: TestClient, fake_ai: None) -> None:

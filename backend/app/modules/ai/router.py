@@ -7,7 +7,7 @@ from app.core.database import get_db
 from app.core.demo_session import get_session_id
 from app.core.errors import AppError
 from app.modules.ai import report_generator, repository
-from app.modules.ai.schemas import ReportRead, ReportRequest
+from app.modules.ai.schemas import ReportRead, ReportRequest, ReportType
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -18,6 +18,10 @@ def create_report(
     db: Session = Depends(get_db),
     session_id: str = Depends(get_session_id),
 ) -> ReportRead:
+    # Request-type routing (Decision 011): closed data needs -> fixed pipeline;
+    # open-ended research -> agent loop.
+    if request.report_type == ReportType.RESEARCH:
+        return report_generator.generate_research_memo(db, request, session_id)
     return report_generator.generate_report(db, request, session_id)
 
 

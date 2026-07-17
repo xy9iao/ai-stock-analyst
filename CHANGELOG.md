@@ -13,6 +13,7 @@ Dated work log; the full phase entry replaces this section at close-out.
 - **2026-07-06** — `SYSTEM_PROMPT` finalized after two review rounds; the financial-advice boundary text verified byte-identical to `prompt_builder`'s.
 - **2026-07-14** — `run_research` implemented; gateway `chat_message` test scaffold added.
 - **2026-07-15** — `llm_client` gateway seam done: `chat_message` returns the full assistant message with optional `tools` pass-through; `chat()` delegates to it (one provider code path); `llm_calls` rows now record `cached_tokens` (OpenAI/DeepSeek field fallback), `route`, `steps`. 8/8 gateway tests green.
+- **2026-07-17** — 13.4 integration: `POST /api/reports` gains `report_type="research"` + `query` (dispatch in `ai/router.py` per Decision 011); memos persist through the reports repository (title = truncated query); `/api/stats` aggregates `cached_tokens`; Research query box on the Reports page.
 - **2026-07-15** — doc cleanup: CLAUDE.md slimmed (close-out checklist → `development-workflow.md`), workflow updated to solution-first delivery with owner-reviewed cleanup diffs.
 
 ## Phase 13 rewrite — Research Agent (planning, 2026-07-06)

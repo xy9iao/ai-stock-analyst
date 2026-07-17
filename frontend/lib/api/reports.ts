@@ -1,6 +1,6 @@
 import { apiFetch } from "./client";
 
-export type ReportType = "single_stock" | "portfolio";
+export type ReportType = "single_stock" | "portfolio" | "research";
 
 export type Report = {
   id: number;
@@ -13,6 +13,7 @@ export type Report = {
 export type GenerateReportInput = {
   report_type: ReportType;
   ticker?: string;
+  query?: string;
 };
 
 export function generateReport(data: GenerateReportInput): Promise<Report> {

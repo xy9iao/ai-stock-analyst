@@ -6,7 +6,10 @@ from app.core.config import settings
 from app.core.errors import AppError
 from app.models import Report
 from app.modules.ai import context, llm_client, prompt_builder, repository
+from app.modules.ai.agent import loop
 from app.modules.ai.schemas import ReportRequest, ReportType
+
+_TITLE_MAX = 80
 
 
 def _enforce_demo_cap(db: Session, session_id: str) -> None:
@@ -46,5 +49,26 @@ def generate_report(db: Session, request: ReportRequest, session_id: str) -> Rep
         report_type=request.report_type.value,
         title=title,
         content_markdown=markdown,
+        session_id=session_id,
+    )
+
+
+def generate_research_memo(db: Session, request: ReportRequest, session_id: str) -> Report:
+    """Run the agent loop for an open-ended query and archive the memo as a report.
+
+    Research memos count against the same per-session report cap as pipeline
+    reports (cost-defense layer 3 covers the agent path with no new infra).
+    """
+    _enforce_demo_cap(db, session_id)
+
+    query = (request.query or "").strip()
+    result = loop.run_research(db, session_id, query)
+
+    title = query if len(query) <= _TITLE_MAX else query[: _TITLE_MAX - 1] + "…"
+    return repository.create_report(
+        db,
+        report_type=ReportType.RESEARCH.value,
+        title=title,
+        content_markdown=result.memo,
         session_id=session_id,
     )
