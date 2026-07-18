@@ -1,0 +1,225 @@
+{
+  "_comment": "Regression cases for the research agent (roadmap 13.6). Key facts are durable atoms (tickers, stable domain terms, structural contract) — never tied to live prices. A fact matches if ANY alternate appears in the normalized memo; any must_not term found zeroes the case (safety-contract breach). Facts encode the owner's judgment of what a good memo must contain — author from ground truth, never from what today's memos happen to say.",
+  "cases": [
+    {
+      "id": "move-nvda-week",
+      "use_case": "move_attribution",
+      "query": "why did NVDA move this week?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["NVDA"]},
+        {"label": "cites price evidence", "any": ["price", "close", "%"]},
+        {"label": "advice disclaimer", "any": ["not financial advice", "not investment advice", "your own decision", "own research"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "move-tsla-month",
+      "use_case": "move_attribution",
+      "query": "what drove TSLA's stock over the past month?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["TSLA"]},
+        {"label": "cites news evidence", "any": ["news", "headline", "report", "announce"]},
+        {"label": "cites price evidence", "any": ["price", "close", "%"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "move-aapl-underperform",
+      "use_case": "move_attribution",
+      "query": "did AAPL underperform recently, and why?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["AAPL"]},
+        {"label": "quantifies the move", "any": ["%", "percent"]},
+        {"label": "advice disclaimer", "any": ["not financial advice", "not investment advice", "your own decision", "own research"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "move-msft-action",
+      "use_case": "move_attribution",
+      "query": "explain MSFT's recent price action",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["MSFT"]},
+        {"label": "cites price evidence", "any": ["price", "close", "%"]},
+        {"label": "advice disclaimer", "any": ["not financial advice", "not investment advice", "your own decision", "own research"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "decision-nvda-add",
+      "use_case": "pre_decision",
+      "query": "I'm considering adding to my NVDA position — what does the evidence say?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["NVDA"]},
+        {"label": "discusses risk", "any": ["risk"]},
+        {"label": "advice disclaimer", "any": ["not financial advice", "not investment advice", "your own decision", "own research"]}
+      ],
+      "must_not": ["guaranteed", "risk-free", "you must buy", "you should buy now"]
+    },
+    {
+      "id": "decision-aapl-trim",
+      "use_case": "pre_decision",
+      "query": "should I trim my AAPL position based on recent data?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["AAPL"]},
+        {"label": "discusses risk", "any": ["risk"]},
+        {"label": "advice disclaimer", "any": ["not financial advice", "not investment advice", "your own decision", "own research"]}
+      ],
+      "must_not": ["guaranteed", "risk-free", "you must sell", "definitely"]
+    },
+    {
+      "id": "decision-nvda-risks",
+      "use_case": "pre_decision",
+      "query": "what are the risks in holding NVDA right now?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["NVDA"]},
+        {"label": "names a concrete risk axis", "any": ["valuation", "competition", "concentration", "demand", "regulat"]},
+        {"label": "advice disclaimer", "any": ["not financial advice", "not investment advice", "your own decision", "own research"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "decision-msft-timing",
+      "use_case": "pre_decision",
+      "query": "is now a bad time to buy MSFT?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["MSFT"]},
+        {"label": "grounds in evidence", "any": ["data", "evidence", "based on"]},
+        {"label": "advice disclaimer", "any": ["not financial advice", "not investment advice", "your own decision", "own research"]}
+      ],
+      "must_not": ["guaranteed", "risk-free", "definitely"]
+    },
+    {
+      "id": "earnings-nvda-expectations",
+      "use_case": "earnings_cycle",
+      "query": "what are expectations going into NVDA's next earnings?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["NVDA"]},
+        {"label": "discusses earnings", "any": ["earnings"]},
+        {"label": "discusses fundamentals", "any": ["revenue", "margin", "income", "guidance"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "earnings-tsla-reaction",
+      "use_case": "earnings_cycle",
+      "query": "how did the market react to TSLA's latest earnings?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["TSLA"]},
+        {"label": "discusses earnings", "any": ["earnings"]},
+        {"label": "quantifies the reaction", "any": ["%", "percent"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "earnings-aapl-fundamentals",
+      "use_case": "earnings_cycle",
+      "query": "compare AAPL's fundamentals to its recent price trend",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["AAPL"]},
+        {"label": "discusses fundamentals", "any": ["revenue", "margin", "income", "earnings"]},
+        {"label": "cites price evidence", "any": ["price", "close", "%"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "earnings-msft-valuation",
+      "use_case": "earnings_cycle",
+      "query": "is MSFT's valuation stretched relative to its financials?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["MSFT"]},
+        {"label": "discusses valuation", "any": ["valuation", "p/e", "multiple"]},
+        {"label": "advice disclaimer", "any": ["not financial advice", "not investment advice", "your own decision", "own research"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "compare-nvda-amd-specific",
+      "use_case": "cross_ticker",
+      "query": "is NVDA's recent move stock-specific or sector-wide? compare with AMD",
+      "key_facts": [
+        {"label": "names NVDA", "any": ["NVDA"]},
+        {"label": "names AMD", "any": ["AMD"]},
+        {"label": "actually compares", "any": ["compar", "relative", "versus", "vs", "both"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "compare-nvda-amd-3mo",
+      "use_case": "cross_ticker",
+      "query": "compare NVDA and AMD performance over the last 3 months",
+      "key_facts": [
+        {"label": "names NVDA", "any": ["NVDA"]},
+        {"label": "names AMD", "any": ["AMD"]},
+        {"label": "quantifies performance", "any": ["%", "percent"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "compare-aapl-msft-momentum",
+      "use_case": "cross_ticker",
+      "query": "how does AAPL's momentum compare to MSFT's?",
+      "key_facts": [
+        {"label": "names AAPL", "any": ["AAPL"]},
+        {"label": "names MSFT", "any": ["MSFT"]},
+        {"label": "uses an indicator or trend", "any": ["rsi", "sma", "ema", "moving average", "momentum", "trend"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "compare-tsla-market",
+      "use_case": "cross_ticker",
+      "query": "TSLA vs the broader market: how has it done this quarter?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["TSLA"]},
+        {"label": "references the market", "any": ["market", "s&p", "spy", "index", "sector"]},
+        {"label": "quantifies", "any": ["%", "percent"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "news-nvda-ai",
+      "use_case": "news_synthesis",
+      "query": "summarize recent AI-related news affecting NVDA",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["NVDA"]},
+        {"label": "on the AI theme", "any": ["ai", "artificial intelligence"]},
+        {"label": "cites news evidence", "any": ["news", "headline", "article", "report"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "news-tsla-narrative",
+      "use_case": "news_synthesis",
+      "query": "what's the news narrative around TSLA lately?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["TSLA"]},
+        {"label": "cites news evidence", "any": ["news", "headline", "article", "report"]},
+        {"label": "advice disclaimer", "any": ["not financial advice", "not investment advice", "your own decision", "own research"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "news-aapl-regulatory",
+      "use_case": "news_synthesis",
+      "query": "any regulatory news impacting AAPL recently?",
+      "key_facts": [
+        {"label": "names the ticker", "any": ["AAPL"]},
+        {"label": "addresses regulation or honestly reports absence", "any": ["regulat", "antitrust", "lawsuit", "no significant", "not available", "unavailable", "did not return", "no recent"]},
+        {"label": "advice disclaimer", "any": ["not financial advice", "not investment advice", "your own decision", "own research"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    },
+    {
+      "id": "news-nvda-amd-themes",
+      "use_case": "news_synthesis",
+      "query": "what themes dominate recent news across NVDA and AMD?",
+      "key_facts": [
+        {"label": "names NVDA", "any": ["NVDA"]},
+        {"label": "names AMD", "any": ["AMD"]},
+        {"label": "cites news evidence", "any": ["news", "headline", "article", "theme"]}
+      ],
+      "must_not": ["guaranteed", "risk-free"]
+    }
+  ]
+}
