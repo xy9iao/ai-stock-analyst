@@ -1,0 +1,10 @@
+{
+  "_comment": "Citation eval cases (Phase 14, core — owner-authored). A case = {id, query, cited_atom}. The atom must be a fact that lives in the INGESTED CORPUS (inspect it: uv run python -m eval.corpus), phrased as a short durable token likely to be repeated verbatim in a memo (product names, program names — not numbers that drift). Pass = the memo line containing the atom carries a [chunk:N] tag AND a cited chunk contains the atom. Aim for ~5 spanning different queries; re-author when the corpus refreshes (known maintenance).",
+  "cases": [
+    {
+      "id": "example-amd-instinct",
+      "query": "what does recent coverage say about AMD's data center momentum?",
+      "cited_atom": "Instinct"
+    }
+  ]
+}

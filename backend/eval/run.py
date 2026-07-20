@@ -13,9 +13,11 @@ from pathlib import Path
 
 from app.core.database import SessionLocal
 from app.modules.ai.agent.loop import run_research
+from eval.citation_check import check_citation
 from eval.scoring import CaseScore, gate, score_case, set_score
 
 CASES_PATH = Path(__file__).parent / "cases.json"
+CITATION_CASES_PATH = Path(__file__).parent / "citation_cases.json"
 BASELINE_PATH = Path(__file__).parent / "baseline.json"
 SESSION_ID = "eval"
 DEFAULT_TOLERANCE = 0.05
@@ -33,7 +35,13 @@ def main() -> int:
         "--record", action="store_true", help="accept the current score as the new baseline"
     )
     parser.add_argument("--only", help="run a single case id (authoring/debugging)")
+    parser.add_argument(
+        "--citations", action="store_true", help="run the citation cases instead of coverage"
+    )
     args = parser.parse_args()
+
+    if args.citations:
+        return run_citation_cases(args.only)
 
     cases = json.loads(CASES_PATH.read_text())["cases"]
     if args.only:
@@ -95,6 +103,39 @@ def main() -> int:
         f"tolerance {baseline['tolerance']}): {'PASS' if passed else 'FAIL - blocks merge'}"
     )
     return 0 if passed else 1
+
+
+def run_citation_cases(only: str | None = None) -> int:
+    """Citation gate: every case must pass (presence + support). Exit 1 on any fail."""
+    cases = json.loads(CITATION_CASES_PATH.read_text())["cases"]
+    if only:
+        cases = [c for c in cases if c["id"] == only]
+        if not cases:
+            print(f"no citation case with id {only!r}")
+            return 2
+
+    failures = 0
+    db = SessionLocal()
+    try:
+        for case in cases:
+            try:
+                run = run_research(db, SESSION_ID, case["query"])
+                result = check_citation(db, case["id"], run.memo, case["cited_atom"])
+                detail = (
+                    f"atom_found={result.atom_found} cited={result.cited} "
+                    f"supported={result.supported} steps={run.steps}"
+                )
+            except Exception as exc:
+                result = None
+                detail = f"CRASHED: {exc}"
+            passed = result is not None and result.passed
+            failures += 0 if passed else 1
+            print(f"  {case['id']:32s} {'PASS' if passed else 'FAIL'}  {detail}")
+    finally:
+        db.close()
+
+    print(f"\ncitation cases: {len(cases) - failures}/{len(cases)} passed")
+    return 0 if failures == 0 else 1
 
 
 if __name__ == "__main__":
