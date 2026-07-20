@@ -104,3 +104,10 @@ def test_hybrid_empty_corpus_returns_empty(monkeypatch: pytest.MonkeyPatch) -> N
     monkeypatch.setattr(retrieval, "_vector_pool", lambda db, q, t: [])
     monkeypatch.setattr(retrieval, "_lexical_pool", lambda db, q, t: [])
     assert hybrid_search(None, "q") == []
+
+
+def test_or_terms_builds_recall_query() -> None:
+    from app.modules.ai.rag.retrieval import _or_terms
+
+    assert _or_terms("NVDA stock move") == "NVDA or stock or move"
+    assert _or_terms("single") == "single"

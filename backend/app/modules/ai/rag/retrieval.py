@@ -60,7 +60,7 @@ def _vector_pool(db: Session, query: str, ticker: str | None) -> list[DocumentCh
 
 def _lexical_pool(db: Session, query: str, ticker: str | None) -> list[DocumentChunk]:
     tsvector = func.to_tsvector("english", DocumentChunk.content)
-    tsquery = func.websearch_to_tsquery("english", query)
+    tsquery = func.websearch_to_tsquery("english", _or_terms(query))
     stmt = (
         select(DocumentChunk)
         .where(tsvector.op("@@")(tsquery))
@@ -88,3 +88,13 @@ def hybrid_search(
     fused = rrf_fuse([[c.id for c in vector_pool], [c.id for c in lexical_pool]])
     by_id = {c.id: c for c in vector_pool + lexical_pool}
     return [by_id[chunk_id] for chunk_id in fused[:top_k]]
+
+
+def _or_terms(query: str) -> str:
+    """Recall-mode FTS query: OR every term; BM25 does the precision work.
+
+    websearch_to_tsquery ANDs terms by default — natural-language questions
+    then match nothing (no chunk contains every word). OR maximizes pool
+    recall; the rescorer's IDF neutralizes the common-word noise OR admits.
+    """
+    return " or ".join(query.split())
