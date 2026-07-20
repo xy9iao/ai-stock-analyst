@@ -8,6 +8,7 @@ Build history by phase — the **accurate, frozen record** of what was actually 
 
 Dated work log; the full phase entry replaces this section at close-out.
 
+- **2026-07-20** — chunking unit done: deterministic fixed-size chunker (1800 chars, 200 overlap) with sentence/whitespace boundary snapping and a termination guard; 11 scaffold tests green; parameters are named constants under the regression gate.
 - **2026-07-20** — kickoff: no RAG UI mode (retrieval = fixed step in pipeline reports + a 6th agent tool, one shared retrieval path); embeddings via OpenAI `text-embedding-3-small`. PR-1 scaffolding: `pgvector/pgvector:pg16` dev image, `document_chunks` table + migration (`CREATE EXTENSION vector`), `rag/embeddings_client.py` gateway (kind='embed' rows in `llm_calls`), deps (`pgvector`, `rank-bm25`, `trafilatura`).
 
 ## Phase 13 — Research Agent (done 2026-07-20)
