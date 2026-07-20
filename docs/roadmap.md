@@ -23,7 +23,7 @@ Single source of truth for project progress and the active phase's scope. Check 
 | Phase | Content | Est. | Status |
 |-------|---------|------|--------|
 | 13 | Tool layer → hand-written agent loop (Research Agent) → regression set | ~1 week | done (2026-07-20) |
-| 13.5 | FastMCP local wrapper (stdio only) | 1 day | not started ← next |
+| 13.5 | FastMCP local wrapper (stdio only) | 1 day | deferred to 2026-07-28 ← next (owner call: build on the MCP release landing that week) |
 | 14 | RAG: ingestion → hybrid retrieval (pgvector + FTS→BM25, RRF) → cited reports | ~4 days | not started |
 | 15 | Long-chat compression + indirect-injection defense | 2–3 days | not started |
 
