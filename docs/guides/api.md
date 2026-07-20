@@ -142,8 +142,11 @@ an OpenAI-compatible LLM (DeepSeek, configured by `LLM_*`). **Every** LLM call r
 | GET | `/api/reports` | list recent reports | `200` |
 | GET | `/api/reports/{id}` | get one report | `200` / `404` |
 
-`POST` body: `{ "report_type": "single_stock" | "portfolio", "ticker"?: str }` — `ticker` is
-required for `single_stock` (else `422`); unknown ticker → `404`; missing key → `503`; LLM error → `502`.
+`POST` body: `{ "report_type": "single_stock" | "portfolio" | "research", "ticker"?: str, "query"?: str }` — `ticker` is
+required for `single_stock`, `query` (≤500 chars) for `research` (else `422`); unknown ticker → `404`;
+missing key → `503`; LLM error → `502`. `research` runs the Phase 13 agent loop (~10–40s) and
+archives the memo like any other report (title = truncated query); demo mode counts it against
+the same per-session report cap (`429` when exhausted).
 
 **ReportRead** — `id`, `report_type`, `title`, `content_markdown`, `created_at`.
 
@@ -178,4 +181,4 @@ The admin endpoints require the `X-Admin-Token` header matching `ADMIN_TOKEN` (u
 |--------|------|---------|------------------|
 | POST | `/api/admin/llm` | set the LLM master switch (`{ enabled, ttl_minutes? }`; on always expires after the TTL, default 60 min) | `200` / `403` |
 | GET | `/api/admin/llm` | current switch state | `200` / `403` |
-| GET | `/api/stats` | LLM usage aggregates (calls, tokens, avg latency, by kind) from `llm_calls` | `200` |
+| GET | `/api/stats` | LLM usage aggregates (calls, prompt/completion/cached tokens, avg latency, by kind) from `llm_calls` | `200` |

@@ -20,6 +20,7 @@ class KindStats(BaseModel):
     calls: int
     prompt_tokens: int
     completion_tokens: int
+    cached_tokens: int
     avg_latency_ms: int
 
 
@@ -27,5 +28,6 @@ class StatsRead(BaseModel):
     total_calls: int
     total_prompt_tokens: int
     total_completion_tokens: int
+    total_cached_tokens: int
     avg_latency_ms: int
     by_kind: list[KindStats]

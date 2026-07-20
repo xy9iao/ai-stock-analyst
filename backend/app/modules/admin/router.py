@@ -57,6 +57,7 @@ def get_stats(db: Session = Depends(get_db)) -> StatsRead:
             func.count(LlmCall.id),
             func.coalesce(func.sum(LlmCall.prompt_tokens), 0),
             func.coalesce(func.sum(LlmCall.completion_tokens), 0),
+            func.coalesce(func.sum(LlmCall.cached_tokens), 0),
             func.coalesce(func.avg(LlmCall.latency_ms), 0),
         ).group_by(LlmCall.kind)
     ).all()
@@ -67,9 +68,10 @@ def get_stats(db: Session = Depends(get_db)) -> StatsRead:
             calls=calls,
             prompt_tokens=int(prompt),
             completion_tokens=int(completion),
+            cached_tokens=int(cached),
             avg_latency_ms=int(avg_latency),
         )
-        for kind, calls, prompt, completion, avg_latency in rows
+        for kind, calls, prompt, completion, cached, avg_latency in rows
     ]
     total_calls = sum(k.calls for k in by_kind)
     total_latency = sum(k.avg_latency_ms * k.calls for k in by_kind)
@@ -77,6 +79,7 @@ def get_stats(db: Session = Depends(get_db)) -> StatsRead:
         total_calls=total_calls,
         total_prompt_tokens=sum(k.prompt_tokens for k in by_kind),
         total_completion_tokens=sum(k.completion_tokens for k in by_kind),
+        total_cached_tokens=sum(k.cached_tokens for k in by_kind),
         avg_latency_ms=int(total_latency / total_calls) if total_calls else 0,
         by_kind=by_kind,
     )

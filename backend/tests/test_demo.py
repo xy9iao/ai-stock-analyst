@@ -75,6 +75,27 @@ def test_demo_report_cap(
     assert client.post("/api/reports", json={"report_type": "portfolio"}).status_code == 201
 
 
+def test_research_memos_share_the_report_cap(
+    client: TestClient, demo_mode: None, fake_report_llm: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.modules.ai.agent import loop
+    from app.modules.ai.agent.loop import ResearchResult
+
+    monkeypatch.setattr(settings, "demo_report_limit", 1)
+    monkeypatch.setattr(
+        loop,
+        "run_research",
+        lambda db, session_id, query: ResearchResult(memo="# Memo", steps=1, step_limit_hit=False),
+    )
+    client.cookies.set(SESSION_COOKIE, "visitor-a")
+    assert client.post("/api/reports", json={"report_type": "portfolio"}).status_code == 201
+
+    # One shared cap for pipeline reports and research memos (cost-defense layer 3).
+    res = client.post("/api/reports", json={"report_type": "research", "query": "why?"})
+    assert res.status_code == 429
+    assert res.json()["detail"]["code"] == "demo_report_limit"
+
+
 def test_llm_switch_default_off_blocks_demo_chat(
     client: TestClient, demo_mode: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -111,7 +132,7 @@ def test_llm_calls_recorded_and_stats(client: TestClient, monkeypatch: pytest.Mo
     # Exercise the real gateway with a faked OpenAI client (no network).
     monkeypatch.setattr(settings, "llm_api_key", "test-key")
     response = SimpleNamespace(
-        usage=SimpleNamespace(prompt_tokens=10, completion_tokens=5),
+        usage=SimpleNamespace(prompt_tokens=10, completion_tokens=5, prompt_cache_hit_tokens=4),
         choices=[SimpleNamespace(message=SimpleNamespace(content="Mock reply."))],
     )
     fake_openai = SimpleNamespace(
@@ -126,7 +147,9 @@ def test_llm_calls_recorded_and_stats(client: TestClient, monkeypatch: pytest.Mo
     assert stats["total_calls"] == 1
     assert stats["total_prompt_tokens"] == 10
     assert stats["total_completion_tokens"] == 5
+    assert stats["total_cached_tokens"] == 4  # DeepSeek-shape fallback field
     assert stats["by_kind"][0]["kind"] == "chat"
+    assert stats["by_kind"][0]["cached_tokens"] == 4
 
 
 def test_session_reset_clears_cookie(client: TestClient) -> None:

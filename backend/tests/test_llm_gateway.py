@@ -93,9 +93,7 @@ def test_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
     assert err.value.status_code == 503
 
 
-def test_demo_switch_off_blocks(
-    monkeypatch: pytest.MonkeyPatch, db_session
-) -> None:
+def test_demo_switch_off_blocks(monkeypatch: pytest.MonkeyPatch, db_session) -> None:
     _install(monkeypatch, _response())
     monkeypatch.setattr(settings, "demo_mode", True)
     with pytest.raises(AppError) as err:
@@ -131,9 +129,7 @@ def test_records_llm_call_with_cached_tokens_route_step(
     assert row.prompt_tokens == 100 and row.completion_tokens == 20
 
 
-def test_cached_tokens_deepseek_fallback_field(
-    monkeypatch: pytest.MonkeyPatch, db_session
-) -> None:
+def test_cached_tokens_deepseek_fallback_field(monkeypatch: pytest.MonkeyPatch, db_session) -> None:
     # No prompt_tokens_details -> fall back to DeepSeek's prompt_cache_hit_tokens.
     _install(monkeypatch, _response(cached_details=None, cache_hit_field=48))
     llm_client.chat_message([{"role": "user", "content": "q"}], db=db_session)

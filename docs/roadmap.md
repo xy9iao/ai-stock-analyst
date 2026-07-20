@@ -5,7 +5,7 @@ Single source of truth for project progress and the active phase's scope. Check 
 ## Current Status
 
 - **v0 shipped and frozen** — all 12 phases done, released as `v0.1.0`, live at https://ai-stock-analyst-pi.vercel.app. Bug fixes only.
-- **Active version: v1 — Agent Layer (Phases 13–15), planned below.** **Phase 13 in progress** on `phase-13-loop` (tool layer + agent loop underway; dated work log in `CHANGELOG.md`).
+- **Active version: v1 — Agent Layer (Phases 13–15), planned below.** **Phase 13 done (2026-07-20)** — Research Agent live end-to-end with the regression gate recorded (`CHANGELOG.md`). **Next: Phase 13.5 (MCP wrapper).**
 - Anything not listed in the v1 plan is **out of scope by default**; deferred ideas stay as GitHub issues.
 
 ## v1 — Agent Layer, MCP, RAG, Context & Injection Defense (Phases 13–15)
@@ -22,8 +22,8 @@ Single source of truth for project progress and the active phase's scope. Check 
 
 | Phase | Content | Est. | Status |
 |-------|---------|------|--------|
-| 13 | Tool layer → hand-written agent loop (Research Agent) → regression set | ~1 week | in progress ← active |
-| 13.5 | FastMCP local wrapper (stdio only) | 1 day | not started |
+| 13 | Tool layer → hand-written agent loop (Research Agent) → regression set | ~1 week | done (2026-07-20) |
+| 13.5 | FastMCP local wrapper (stdio only) | 1 day | not started ← next |
 | 14 | RAG: ingestion → hybrid retrieval (pgvector + FTS→BM25, RRF) → cited reports | ~4 days | not started |
 | 15 | Long-chat compression + indirect-injection defense | 2–3 days | not started |
 

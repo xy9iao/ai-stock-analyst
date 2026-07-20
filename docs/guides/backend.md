@@ -61,13 +61,17 @@ backend/
 │       │   ├── service.py
 │       │   ├── router.py
 │       │   └── schemas.py
-│       ├── ai/              # AI report generation (Phase 6)
-│       │   ├── llm_client.py       # the single OpenAI-compatible LLM call site
+│       ├── ai/              # AI report generation (Phase 6) + Research Agent (Phase 13)
+│       │   ├── llm_client.py       # the single OpenAI-compatible LLM call site (chat/complete/chat_message)
+│       │   ├── agent/              # hand-written tool-use loop (Phase 13)
+│       │   │   ├── loop.py         #   run_research: ≤8-step evidence loop, frozen static prefix
+│       │   │   ├── tools.py        #   5 read-only tool wrappers over service functions
+│       │   │   └── indicators.py   #   SMA/EMA/RSI (pure functions)
 │       │   ├── context.py          # compact DB-context assembly
 │       │   ├── prompt_builder.py   # system prompt (style + safety) + user prompt
-│       │   ├── report_generator.py # orchestration
+│       │   ├── report_generator.py # pipeline orchestration + research-memo entry
 │       │   ├── repository.py       # reports table read/write
-│       │   ├── router.py
+│       │   ├── router.py           # incl. the request-type dispatch (Decision 011)
 │       │   └── schemas.py
 │       ├── chat/            # investment chat assistant (Phase 7)
 │       │   ├── context.py          # toggleable context assembly (reuses ai/context)
@@ -81,6 +85,7 @@ backend/
 │           ├── router.py
 │           └── schemas.py
 ├── alembic/
+├── eval/                    # Phase 13 regression set: cases.json + scoring + runner (local-only, real spend)
 ├── tests/                   # conftest.py (SQLite fixture) + test_*.py
 ├── alembic.ini
 ├── pyproject.toml
@@ -173,12 +178,32 @@ For the public demo (`DEMO_MODE=true`; off by default so local use is unchanged)
   ③ per-session caps in the `ai`/`chat` services, counted in **LLM calls** (agent-proof),
   derived from existing rows (no counter infra).
 - **Observability** — `llm_client` writes one `llm_calls` row per call (tokens, latency,
-  `route`/`steps` reserved for the agent version) + a structured log line; `GET /api/stats`
-  aggregates them.
+  `cached_tokens`, and — on the agent path — `route='agent'` + the 1-based `steps` index)
+  plus a structured log line; `GET /api/stats` aggregates them. Research memos count
+  against the same per-session report cap as pipeline reports.
+
+## Research Agent (Phase 13)
+
+`POST /api/reports` with `report_type="research"` + `query` routes to the hand-written
+tool-use loop in `modules/ai/agent/loop.py` (Decision 011: closed data needs → pipeline,
+open-ended forensics → agent; chat stays non-agentic). The loop sends full history + the
+5 tool schemas through `llm_client.chat_message`, executes returned tool calls
+sequentially (one `role:tool` message per `tool_call_id`), and terminates when the model
+answers without tool calls, when the 8-LLM-call budget forces a final no-tools answer
+(memo marked "step limit reached"), or when the gateway raises `AppError`. Tool errors —
+unknown names, malformed arguments, service `AppError`s — are fed back as tool-result
+text and never end the loop. The static prefix (system prompt + tool schemas) is frozen
+at import so DeepSeek's prefix cache pays down the resend-full-history cost (~79% of
+agent-path prompt tokens cache-served, measured 2026-07-17).
+
+**Regression gate:** `backend/eval/` holds 20 labeled research cases scored by
+deterministic key-fact coverage (`uv run python -m eval.run`; `--record` moves the
+baseline). Local-only, never CI. Per CLAUDE.md, any change to prompts, models, or
+retrieval parameters runs it before merge; a score below baseline − tolerance blocks.
 
 ## Testing
 
-`backend/tests/` holds the pytest suite (43 tests): `conftest.py` provides a `client` fixture backed by in-memory SQLite via a `get_db` override; market/news/financials providers and the LLM are monkeypatched at their factory/call seams, so tests run with **no network and no API cost**. `uv run pytest` also reports coverage (`pytest-cov`, measured — not gated).
+`backend/tests/` holds the pytest suite (96 tests): `conftest.py` provides a `client` fixture backed by in-memory SQLite via a `get_db` override; market/news/financials providers and the LLM are monkeypatched at their factory/call seams, so tests run with **no network and no API cost**. `uv run pytest` also reports coverage (`pytest-cov`, measured — not gated).
 
 ## Health Endpoint
 
