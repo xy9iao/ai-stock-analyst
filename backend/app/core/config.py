@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 60.0
     market_data_provider: str = "yfinance"
 
+    # Phase 14 RAG: embeddings are a separate provider from the LLM (DeepSeek has
+    # no embeddings API). Dimensions are baked into the pgvector column — changing
+    # the model means re-embedding the corpus and a migration.
+    embedding_api_key: str = ""
+    embedding_model: str = "text-embedding-3-small"
+    embedding_dimensions: int = 1536
+
     # Public-demo hardening. All OFF by default so local use is unchanged:
     # DEMO_MODE=true enables anonymous session isolation, per-session LLM caps,
     # and the LLM master switch (default off, enabled via the admin endpoint).

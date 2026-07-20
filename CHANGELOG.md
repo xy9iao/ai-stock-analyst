@@ -4,6 +4,12 @@ Build history by phase — the **accurate, frozen record** of what was actually 
 
 **v0 at a glance (June – July 2026):** Phases 0–11 delivered a local-first AI stock research assistant — holdings/watchlist CRUD → market data (provider abstraction + cache) → news/financials → AI reports (single LLM gateway, compact context injection) → multi-turn chat → Markdown export → UI polish/design system → test suites (43 backend + 28 frontend) → the public README. Plus off-roadmap: one-command Docker dev, the frontend MVP UI, ESLint/CI hardening. v0 was declared **feature-frozen on 2026-07-02**; Phase 12 (deploy-prep) remains.
 
+## Phase 14 — Hybrid RAG + Cited Reports (in progress)
+
+Dated work log; the full phase entry replaces this section at close-out.
+
+- **2026-07-20** — kickoff: no RAG UI mode (retrieval = fixed step in pipeline reports + a 6th agent tool, one shared retrieval path); embeddings via OpenAI `text-embedding-3-small`. PR-1 scaffolding: `pgvector/pgvector:pg16` dev image, `document_chunks` table + migration (`CREATE EXTENSION vector`), `rag/embeddings_client.py` gateway (kind='embed' rows in `llm_calls`), deps (`pgvector`, `rank-bm25`, `trafilatura`).
+
 ## Phase 13 — Research Agent (done 2026-07-20)
 
 An on-demand due-diligence engine: open-ended question → hand-written ≤8-step tool-use loop over the app's own data plane → archived research memo. Built 2026-07-06 → 2026-07-20 across PR #28 (loop + gateway seam) and PR #31 (integration + regression set).

@@ -40,14 +40,19 @@ def _record_call(
     cached_tokens: int | None = None,
     route: str | None = None,
     steps: int | None = None,
+    model: str | None = None,
 ) -> None:
-    """Best-effort observability — a logging failure must never break the reply."""
+    """Best-effort observability — a logging failure must never break the reply.
+
+    `model` defaults to the chat LLM; the embeddings client passes its own.
+    """
     from app.models import LlmCall  # local import to keep module import cheap
 
+    model = model or settings.llm_model
     logger.info(
         "llm_call kind=%s model=%s latency_ms=%d prompt_tokens=%s completion_tokens=%s",
         kind,
-        settings.llm_model,
+        model,
         latency_ms,
         prompt_tokens,
         completion_tokens,
@@ -57,7 +62,7 @@ def _record_call(
             LlmCall(
                 session_id=session_id,
                 kind=kind,
-                model=settings.llm_model,
+                model=model,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=completion_tokens,
                 cached_tokens=cached_tokens,
