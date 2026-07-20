@@ -5,7 +5,7 @@ Single source of truth for project progress and the active phase's scope. Check 
 ## Current Status
 
 - **v0 shipped and frozen** — all 12 phases done, released as `v0.1.0`, live at https://ai-stock-analyst-pi.vercel.app. Bug fixes only.
-- **Active version: v1 — Agent Layer (Phases 13–15), planned below.** **Phase 13 done (2026-07-20)** — Research Agent live end-to-end with the regression gate recorded (`CHANGELOG.md`). **Next: Phase 13.5 (MCP wrapper).**
+- **Active version: v1 — Agent Layer (Phases 13–15), planned below.** **Phase 13 done (2026-07-20)**; **Phase 14 active** (owner-confirmed reorder ahead of Phase 13.5, which is deferred to 2026-07-28 for the new MCP release).
 - Anything not listed in the v1 plan is **out of scope by default**; deferred ideas stay as GitHub issues.
 
 ## v1 — Agent Layer, MCP, RAG, Context & Injection Defense (Phases 13–15)
@@ -23,8 +23,8 @@ Single source of truth for project progress and the active phase's scope. Check 
 | Phase | Content | Est. | Status |
 |-------|---------|------|--------|
 | 13 | Tool layer → hand-written agent loop (Research Agent) → regression set | ~1 week | done (2026-07-20) |
-| 13.5 | FastMCP local wrapper (stdio only) | 1 day | deferred to 2026-07-28 ← next (owner call: build on the MCP release landing that week) |
-| 14 | RAG: ingestion → hybrid retrieval (pgvector + FTS→BM25, RRF) → cited reports | ~4 days | not started |
+| 13.5 | FastMCP local wrapper (stdio only) | 1 day | deferred to 2026-07-28 (owner call: build on the MCP release landing that week) |
+| 14 | RAG: ingestion → hybrid retrieval (pgvector + FTS→BM25, RRF) → cited reports | ~4 days | in progress ← active |
 | 15 | Long-chat compression + indirect-injection defense | 2–3 days | not started |
 
 Sequencing rationale: 13 before 14 because `search_news` becomes the retrieval entry point and the regression set must exist before RAG changes report behavior; 15 last because sanitization sits on top of the Phase 14 retrieval path.
