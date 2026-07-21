@@ -25,10 +25,28 @@ def get_session(db: Session, session_id: int, demo_session_id: str) -> ChatSessi
     return session
 
 
-def set_summary(db: Session, session: ChatSession, summary: str) -> None:
-    """Persist the running compression summary (Phase 15) on its session row."""
+def set_summary(db: Session, session: ChatSession, summary: str, through_message_id: int) -> None:
+    """Persist the running summary and its eviction cursor (Phase 15).
+
+    Messages with id <= the cursor are folded into the summary and must never
+    be re-read into the prompt — the cursor is what makes the summary 'running'
+    instead of quadratically re-summarizing the whole history every event.
+    """
     session.summary = summary
+    session.summarized_through_message_id = through_message_id
     db.commit()
+
+
+def list_messages_after(db: Session, session_id: int, after_id: int | None) -> list[ChatMessage]:
+    """The uncompressed tail: messages newer than the eviction cursor."""
+    stmt = (
+        select(ChatMessage)
+        .where(ChatMessage.chat_session_id == session_id)
+        .order_by(ChatMessage.id)
+    )
+    if after_id is not None:
+        stmt = stmt.where(ChatMessage.id > after_id)
+    return list(db.scalars(stmt))
 
 
 def list_sessions(db: Session, demo_session_id: str, limit: int = 50) -> list[ChatSession]:

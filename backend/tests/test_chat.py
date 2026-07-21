@@ -131,3 +131,35 @@ def test_compression_failure_degrades_to_cap(
     res = client.post("/api/chat/messages", json={"message": "long question " * 30})
     assert res.status_code == 201  # chat survives; capped history was used
     assert fake_chat.last_messages is not None
+
+
+def test_eviction_cursor_prevents_resummarizing(
+    client: TestClient, fake_chat: _Recorder, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The measurement-discovered bug: without the cursor, every event re-fed
+    already-summarized turns into the summarizer (quadratic, drifty)."""
+    from app.core.config import settings
+    from app.modules.chat import compression
+
+    monkeypatch.setattr(settings, "chat_compress_threshold_tokens", 10)
+    monkeypatch.setattr(settings, "chat_verbatim_messages", 2)
+    payloads: list[str] = []
+
+    def fake_complete(system, user, **kw):
+        payloads.append(user)
+        return "SUMMARY"
+
+    monkeypatch.setattr(compression.llm_client, "complete", fake_complete)
+
+    sid = client.post("/api/chat/messages", json={"message": "FIRST-QUESTION " * 10}).json()[
+        "session_id"
+    ]
+    for text in ("SECOND-QUESTION " * 10, "THIRD-QUESTION " * 10, "FOURTH-QUESTION " * 10):
+        client.post("/api/chat/messages", json={"message": text, "session_id": sid})
+
+    assert len(payloads) >= 2  # multiple compression events fired
+    # A later event must never re-summarize turns already behind the cursor.
+    assert "FIRST-QUESTION" not in payloads[-1]
+    # And evicted turns never reappear in the chat prompt itself.
+    prompt_text = " ".join(m["content"] for m in fake_chat.last_messages)
+    assert "FIRST-QUESTION" not in prompt_text.replace("SUMMARY", "")

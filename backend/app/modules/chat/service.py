@@ -60,16 +60,15 @@ def send_message(db: Session, request: ChatMessageRequest, demo_session_id: str)
     if context_block:
         messages.append({"role": "system", "content": "Context:\n" + context_block})
 
-    history = [
-        {"role": past.role, "content": past.content}
-        for past in repository.list_messages(db, session.id)
-    ]
+    rows = repository.list_messages_after(db, session.id, session.summarized_through_message_id)
+    history = [{"role": past.role, "content": past.content} for past in rows]
     summary = session.summary
     if compression.needs_compression(history):
         try:
             summary, history = compression.compress(db, demo_session_id, summary, history)
-            if summary:  # compress no-ops when history fits the window
-                repository.set_summary(db, session, summary)
+            evicted_count = len(rows) - len(history)
+            if evicted_count > 0:  # compress no-ops when history fits the window
+                repository.set_summary(db, session, summary, rows[evicted_count - 1].id)
         except AppError:
             # Compression is an optimization: degrade to the v0 cap, never block chat.
             history = history[-_HISTORY_LIMIT:]

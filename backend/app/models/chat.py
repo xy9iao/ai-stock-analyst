@@ -13,6 +13,9 @@ class ChatSession(SessionScopedMixin, TimestampMixin, Base):
     # Phase 15: the running summary of compressed-away turns (None until the
     # first compression event). Persisted so a restart never re-summarizes.
     summary: Mapped[str | None] = mapped_column(Text)
+    # Eviction cursor: messages with id <= this are already folded into the
+    # summary and must never be re-read into the prompt or re-summarized.
+    summarized_through_message_id: Mapped[int | None] = mapped_column()
 
     messages: Mapped[list["ChatMessage"]] = relationship(
         back_populates="session",

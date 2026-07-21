@@ -31,8 +31,11 @@ class Settings(BaseSettings):
 
     # Phase 15 chat compression: operational knobs (unlike the chunker's constants —
     # an operator may tune these per model context size; chat is not regression-gated).
-    chat_compress_threshold_tokens: int = 2500
-    chat_verbatim_messages: int = 12
+    # Sizing rule: threshold ≈ 2× the verbatim window's expected token cost, or
+    # compression fires constantly and saves nothing (measured 2026-07-21: replies
+    # run 800–1500 tokens, so 6 messages ≈ 3.5k tokens -> threshold 6000).
+    chat_compress_threshold_tokens: int = 6000
+    chat_verbatim_messages: int = 6
 
     # Public-demo hardening. All OFF by default so local use is unchanged:
     # DEMO_MODE=true enables anonymous session isolation, per-session LLM caps,
