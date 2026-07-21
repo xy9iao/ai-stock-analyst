@@ -5,7 +5,7 @@ Single source of truth for project progress and the active phase's scope. Check 
 ## Current Status
 
 - **v0 shipped and frozen** — all 12 phases done, released as `v0.1.0`, live at https://ai-stock-analyst-pi.vercel.app. Bug fixes only.
-- **Active version: v1 — Agent Layer (Phases 13–15), planned below.** **Phase 13 done (2026-07-20); Phase 14 done (2026-07-21)** (ran ahead of Phase 13.5 by owner-confirmed reorder). **Phase 15 active** (owner-confirmed reorder); **Phase 13.5 (MCP wrapper) lands 2026-07-28** with the new MCP release, then v1 close-out.
+- **Active version: v1 — Agent Layer (Phases 13–15), planned below.** **Phase 13 done (2026-07-20); Phase 14 done (2026-07-21)** (ran ahead of Phase 13.5 by owner-confirmed reorder). **Phases 13, 14, 15 done** (2026-07-20 → 07-21). **Only Phase 13.5 (MCP wrapper) remains** — deferred to 2026-07-28 for the new MCP release; v1 formally closes (README diagram, maintenance-mode declaration) once it lands. v1 measured so far: 79% agent-path prompt-cache hit; ~20% net long-chat compression saving.
 - Anything not listed in the v1 plan is **out of scope by default**; deferred ideas stay as GitHub issues.
 
 ## v1 — Agent Layer, MCP, RAG, Context & Injection Defense (Phases 13–15)
@@ -25,7 +25,7 @@ Single source of truth for project progress and the active phase's scope. Check 
 | 13 | Tool layer → hand-written agent loop (Research Agent) → regression set | ~1 week | done (2026-07-20) |
 | 13.5 | FastMCP local wrapper (stdio only) | 1 day | deferred to 2026-07-28 (owner call: build on the MCP release landing that week) |
 | 14 | RAG: ingestion → hybrid retrieval (pgvector + FTS→BM25, RRF) → cited reports | ~4 days | done (2026-07-21) |
-| 15 | Long-chat compression + indirect-injection defense | 2–3 days | in progress ← active (owner-confirmed reorder ahead of deferred 13.5) |
+| 15 | Long-chat compression + indirect-injection defense | 2–3 days | done (2026-07-21) |
 
 Sequencing rationale: 13 before 14 because `search_news` becomes the retrieval entry point and the regression set must exist before RAG changes report behavior; 15 last because sanitization sits on top of the Phase 14 retrieval path.
 

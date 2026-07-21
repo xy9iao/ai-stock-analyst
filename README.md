@@ -32,8 +32,10 @@ The demo is a shared, unauthenticated instance hardened for public exposure: eve
 - **Holdings & watchlist** — CRUD with validation; live prices, day change, market value, and gain/loss per position.
 - **Market data** — quotes and price/volume charts (1d / 1w / 1m / 1y) via a swappable provider abstraction (yfinance today), cached in Postgres.
 - **News & financials** — company headlines and compact financial snapshots, used as context for AI analysis.
-- **AI reports** — single-stock and portfolio research reports: the backend assembles a compact context from your data, calls the LLM (DeepSeek, OpenAI-compatible), and stores the result as Markdown — exportable with one click.
-- **Chat** — a multi-turn investment assistant with **toggleable context injection** (holdings / watchlist / a focus ticker / recent reports), so you control exactly what the model sees.
+- **AI reports** — single-stock and portfolio research reports: the backend assembles a compact context from your data, calls the LLM (DeepSeek, OpenAI-compatible), and stores the result as Markdown — exportable with one click. Reports carry **clickable source citations** grounded in hybrid retrieval (pgvector + Postgres FTS→BM25, RRF-fused).
+- **Research agent** — a hand-written tool-use loop (5 read-only tools + document search, ≤8 steps) that answers open-ended questions by gathering evidence and files an archived memo; routed separately from the fixed report pipeline.
+- **Chat** — a multi-turn investment assistant with **toggleable context injection** (holdings / watchlist / a focus ticker / recent reports); long conversations stay affordable via **sliding-window + running-summary compression**.
+- **Trustworthy by design** — every LLM claim in a report is cited or marked unverified; retrieved public content is demarcated + sanitized against indirect prompt injection (OWASP LLM01); a local regression gate (coverage + citation + poisoned-chunk cases) blocks quality drift on any prompt/model change.
 - **Beginner-friendly UI** — finance-term tooltips, loading/empty/error states, responsive layout, and a persistent not-financial-advice notice.
 - **Demo-hardened deployment** — anonymous session isolation (state isolation without an auth system), a three-layer LLM cost defense, and per-call token/latency observability (`llm_calls` table + `/api/stats`).
 
