@@ -441,3 +441,47 @@ Standard reports' data needs are fully known at design time, so a fixed pipeline
 - The router is an if-statement on `report_type`; its justification lives here, not in a results table.
 - Research memos are archived through the existing reports path and counted by the existing per-session report cap.
 - The three service tiers (Report / Research / Chat) are a product contract — recorded in the roadmap's Phase 13 section — and compose rather than merge.
+
+---
+
+# Decision 012: Hybrid retrieval on Postgres — pgvector + FTS→BM25, RRF fusion, no dedicated vector DB
+
+## Date
+
+2026-07-21
+
+## Decision
+
+Retrieval is one shared code path (`ai/rag/retrieval.py`): pgvector cosine (exact scan, no ANN index) and a Postgres FTS candidate pool (OR-recall `websearch_to_tsquery`, GIN expression index) rescored in the app layer with real BM25 (`rank_bm25`), fused with RRF (k=60, fuse-then-truncate). Both consumers — the pipeline's fixed retrieval step and the agent's `search_documents` tool — call this one function. No ChromaDB/Pinecone/Weaviate.
+
+## Reasoning
+
+Vectors are a column, not a database: chunks carry relational metadata (ticker, URL, date), live next to eight other tables, and ingest is one delete-then-insert transaction — a second datastore would add a consistency problem, a deployment cost ($0/mo stack; Render's disk is ephemeral), and split the hybrid design across two query engines. At ~10³ vectors an exact scan is single-digit ms, so ANN's approximate-results price buys nothing. FTS handles recall; BM25 handles ranking (Neon has no pg_search; `ts_rank` is not BM25 — claim precision). RRF fuses ranks because cosine and BM25 scores are incommensurable and normalization constants drift with the corpus.
+
+## Consequences
+
+- One place to wrap retrieved content for injection defense (Decision 013) and citations.
+- Known trade-offs, accepted: pool-relative IDF; near-twin adjacent chunks can co-retrieve; magnitude information discarded by RRF.
+- Revisit ANN indexing at ~10⁵ vectors; revisit dedicated vector DBs only if vector search becomes the product.
+
+---
+
+# Decision 013: Indirect-injection defense — demarcation + structural sanitization + read-only privilege boundary, no LLM classifier
+
+## Date
+
+2026-07-21
+
+## Decision
+
+Threat model: ingested public web content flows into prompts on both report paths; a poisoned article can attempt to steer memos the owner acts on with real money (OWASP LLM01, indirect injection — the system fetches the attacker's text itself). Defense, at the single shared retrieval path: ① every chunk is wrapped in explicit untrusted-content markers and both system prompts carry a standing "data, never instructions" policy; ② deterministic *structural* sanitization strips only escape vectors (marker forgeries, line-start role tags, [INST]-style markers) — no phrase blacklists; ③ all tools are read-only, capping the blast radius at report bias. Verified by 3 poisoned-chunk eval cases (canary detection, `eval/run.py --poisoned`). Explicitly rejected: LLM injection classifiers, spotlighting/encoding, content allowlists.
+
+## Reasoning
+
+Defense depth is proportional to blast radius: with read-only tools the worst outcome is a biased memo, and biased memos are already auditable through citations. Sanitization targets structure, not phrases, because instruction phrasings are infinite (blacklists are whack-a-mole breeding false confidence) while escape structure is finite; persuasive text stays inside the demarcation box where the prompt policy governs it. A classifier LLM would add per-chunk cost, drift, gate instability, and a new attackable surface to defend against a capped risk. Canary-based eval tests compliance deterministically; content that merely lies is out of scope for this layer — that is what reader-verifiable citations are for.
+
+## Consequences
+
+- If tools ever stop being read-only, this decision must be revisited first: HITL gates and tool allowlists become mandatory before any write-capable tool ships.
+- Headline/summary strings from provider APIs (v0 surface) remain unwrapped — accepted residual, extend the wrapper if it ever bites.
+- The poisoned cases run with the eval gates before any prompt/model/retrieval merge.
