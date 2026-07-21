@@ -2,6 +2,13 @@
 
 Build history by phase — the **accurate, frozen record** of what was actually built, newest first. The active phase lives in `docs/roadmap.md`. Per the Phase close-out rules in `CLAUDE.md`, append a new section here when a phase is finished; the active phase keeps a dated work log at the top until then.
 
+## Phase 15 — Compression + Injection Defense (in progress)
+
+Dated work log; the full phase entry replaces this section at close-out.
+
+- **2026-07-21** — regression baseline re-recorded post-Phase-14 merge: **0.983** (floor 0.933); known flake: `move-msft-action` drops the disclaimer on step-limited runs.
+- **2026-07-21** — chat compression live: batch eviction into a running summary (`chat/compression.py`, flash-tier `kind='summarize'`), cache-preserving ordering (static system → summary → verbatim window → user turn), summary persisted on `chat_sessions`, `AppError` degradation to the v0 cap. Migration hand-fixed after autogenerate tried to drop the FTS expression index (new landmine recorded).
+
 **v0 at a glance (June – July 2026):** Phases 0–11 delivered a local-first AI stock research assistant — holdings/watchlist CRUD → market data (provider abstraction + cache) → news/financials → AI reports (single LLM gateway, compact context injection) → multi-turn chat → Markdown export → UI polish/design system → test suites (43 backend + 28 frontend) → the public README. Plus off-roadmap: one-command Docker dev, the frontend MVP UI, ESLint/CI hardening. v0 was declared **feature-frozen on 2026-07-02**; Phase 12 (deploy-prep) remains.
 
 ## Phase 14 — Hybrid RAG + Cited Reports (done 2026-07-21)

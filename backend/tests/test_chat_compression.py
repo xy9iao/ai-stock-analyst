@@ -54,8 +54,12 @@ def test_compress_payload_has_evicted_and_prior_summary_only(
     monkeypatch: pytest.MonkeyPatch, fake_llm
 ) -> None:
     monkeypatch.setattr(settings, "chat_verbatim_messages", 2)
-    history = [_msg("user", "EVICTED-OLD"), _msg("assistant", "EVICTED-MID"),
-               _msg("user", "KEPT-A"), _msg("assistant", "KEPT-B")]
+    history = [
+        _msg("user", "EVICTED-OLD"),
+        _msg("assistant", "EVICTED-MID"),
+        _msg("user", "KEPT-A"),
+        _msg("assistant", "KEPT-B"),
+    ]
     compression.compress(None, "sess", "PRIOR SUMMARY", history)
     assert "PRIOR SUMMARY" in fake_llm["user"]
     assert "EVICTED-OLD" in fake_llm["user"] and "EVICTED-MID" in fake_llm["user"]

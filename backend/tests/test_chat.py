@@ -81,3 +81,53 @@ def test_context_toggles_passed_through(client: TestClient, fake_chat: _Recorder
 
 def test_empty_message_rejected_422(client: TestClient, fake_chat: _Recorder) -> None:
     assert client.post("/api/chat/messages", json={"message": ""}).status_code == 422
+
+
+def test_long_history_compresses_and_persists_summary(
+    client: TestClient, fake_chat: _Recorder, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.core.config import settings
+    from app.modules.chat import compression
+
+    monkeypatch.setattr(settings, "chat_compress_threshold_tokens", 10)
+    monkeypatch.setattr(settings, "chat_verbatim_messages", 2)
+    monkeypatch.setattr(
+        compression.llm_client, "complete", lambda system, user, **kw: "SUMMARY OF OLD TURNS"
+    )
+
+    first = client.post("/api/chat/messages", json={"message": "tell me about NVDA " * 20})
+    session_id = first.json()["session_id"]
+    client.post(
+        "/api/chat/messages",
+        json={"message": "what about MSFT? " * 20, "session_id": session_id},
+    )
+    # By the third message, four stored messages exceed the 2-message window ->
+    # the older pair gets evicted into the summary.
+    client.post("/api/chat/messages", json={"message": "and AMD?", "session_id": session_id})
+
+    roles = [(m["role"], m["content"]) for m in fake_chat.last_messages]
+    summary_blocks = [c for r, c in roles if r == "system" and "summary" in c.lower()]
+    assert summary_blocks and "SUMMARY OF OLD TURNS" in summary_blocks[0]
+    # summary system block comes before the verbatim history (cache ordering)
+    summary_idx = next(i for i, (r, c) in enumerate(roles) if "SUMMARY OF OLD" in c)
+    first_history_idx = next(i for i, (r, c) in enumerate(roles) if r in ("user", "assistant"))
+    assert summary_idx < first_history_idx
+
+
+def test_compression_failure_degrades_to_cap(
+    client: TestClient, fake_chat: _Recorder, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.core.config import settings
+    from app.core.errors import AppError
+    from app.modules.chat import compression
+
+    monkeypatch.setattr(settings, "chat_compress_threshold_tokens", 10)
+
+    def boom(db, sid, summary, history):
+        raise AppError("llm_error", "down", 502)
+
+    monkeypatch.setattr(compression, "compress", boom)
+
+    res = client.post("/api/chat/messages", json={"message": "long question " * 30})
+    assert res.status_code == 201  # chat survives; capped history was used
+    assert fake_chat.last_messages is not None
