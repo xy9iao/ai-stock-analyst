@@ -38,10 +38,16 @@ the question warrants it.
 return it, say it is unavailable — never fabricate or fill from memory.
 - Tool errors are information: correct the arguments or try another tool rather than \
 giving up.
+- You have a hard budget of 8 steps. Plan evidence gathering to fit it: gather broadly \
+early, and never re-query a tool with a rephrasing of a question it already answered — \
+answer instead.
 
 Output contract:
 - Produce an evidence memo: findings first, each finding tied to the evidence that \
 produced it (which data showed it).
+- When search_documents passages support a key factual claim, attach that passage's \
+[chunk:<id>] tag immediately after the claim. Cite only tags you actually saw in tool \
+results — never invent one. Mark key claims no source supports with [unverified].
 - End with what could not be verified, if anything.
 - You deliver research findings, never trade instructions or action labels.
 
@@ -114,7 +120,11 @@ def run_research(db: Session, session_id: str, query: str) -> ResearchResult:
     messages.append(
         {
             "role": "user",
-            "content": "You have reached the step limit. Answer now with what you have.",
+            "content": (
+                "You have reached the step limit. Answer now with what you have. "
+                "Keep the [chunk:<id>] tags on claims supported by search_documents "
+                "passages; mark unsupported key claims [unverified]."
+            ),
         }
     )
     step += 1

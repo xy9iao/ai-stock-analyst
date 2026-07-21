@@ -1,4 +1,4 @@
-"""The Research Agent's tool layer: five locked, read-only tools.
+"""The Research Agent's tool layer: six read-only tools.
 
 Each tool is a thin wrapper over an existing service-layer function (never a
 provider or repository directly), so cache-aside, ticker normalization, and
@@ -8,7 +8,9 @@ purpose (token cost is paid on every remaining loop step).
 
 `TOOLS` maps tool name -> (callable, OpenAI-format schema). The loop binds
 `db` and `session_id` and passes the model's arguments as keywords; schemas
-mirror the docstrings. Do not add tools mid-phase (max 5, by decision).
+mirror the docstrings. Phase 13 locked five tools; Phase 14 added
+`search_documents` (hybrid retrieval over ingested article bodies) as a
+recorded scope decision. Do not add tools mid-phase.
 """
 
 from collections.abc import Callable
@@ -18,6 +20,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.modules.ai import llm_client
+from app.modules.ai.rag import retrieval
 from app.modules.financials import service as financials_service
 from app.modules.market_data import service as market_service
 from app.modules.market_data.schemas import HistoryRange
@@ -26,6 +29,8 @@ from app.modules.news import service as news_service
 from . import indicators as ind
 
 _MAX_NEWS_LIMIT = 10
+_MAX_PASSAGE_CHARS = 600  # tool outputs are resent every remaining loop step
+_AGENT_TOP_K = 5  # fewer passages than the pipeline's 8: loop history is paid per step
 _MAX_EXTRACT_TEXTS = 20
 _MAX_EXTRACT_CHARS = 8000
 _HISTORY_SAMPLE_POINTS = 15
@@ -166,6 +171,26 @@ def extract_bulk(db: Session, session_id: str, texts: list[str], focus: str) -> 
     )
 
 
+def search_documents(db: Session, session_id: str, query: str, ticker: str = "") -> str:
+    """Deep hybrid search (semantic + keyword) over ingested full article bodies.
+    Returns the most relevant passages with stable [chunk:<id>] tags, title,
+    date, and source URL — reference passages by their chunk tag."""
+    chunks = retrieval.hybrid_search(db, query, ticker=ticker or None, top_k=_AGENT_TOP_K)
+    if not chunks:
+        return (
+            f"No ingested documents matched '{query}'. The document corpus may not "
+            "cover this topic yet — try search_news for headlines instead."
+        )
+    lines = [f"Passages matching '{query}':"]
+    for chunk in chunks:
+        date = str(chunk.published_at)[:10] if chunk.published_at else "n.d."
+        lines.append(
+            f"[chunk:{chunk.id}] {chunk.title} ({date}) {chunk.source_url}\n"
+            f"{chunk.content[:_MAX_PASSAGE_CHARS]}"
+        )
+    return "\n\n".join(lines)
+
+
 @dataclass(frozen=True)
 class ToolSpec:
     fn: Callable[..., str]
@@ -210,6 +235,24 @@ TOOLS: dict[str, ToolSpec] = {
             "earnings dates.",
             {"ticker": _TICKER},
             ["ticker"],
+        ),
+    ),
+    "search_documents": ToolSpec(
+        search_documents,
+        _schema(
+            "search_documents",
+            "Deep hybrid search (semantic + keyword) over ingested full article bodies; "
+            "returns relevant passages with [chunk:<id>] tags and source URLs. Use for "
+            "evidence beyond headlines. One broad query usually suffices — rephrasing "
+            "the same question returns largely the same passages.",
+            {
+                "query": {"type": "string", "description": "What to look for, natural language"},
+                "ticker": {
+                    "type": "string",
+                    "description": "Optional ticker to restrict results to",
+                },
+            },
+            ["query"],
         ),
     ),
     "search_news": ToolSpec(

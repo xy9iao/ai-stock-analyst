@@ -1,4 +1,5 @@
 from app.models.chat import ChatMessage, ChatSession
+from app.models.document_chunk import DocumentChunk
 from app.models.holding import Holding
 from app.models.llm_call import LlmCall
 from app.models.market_data_cache import MarketDataCache
@@ -10,6 +11,7 @@ from app.models.watchlist_item import WatchlistItem
 __all__ = [
     "ChatMessage",
     "ChatSession",
+    "DocumentChunk",
     "Holding",
     "LlmCall",
     "MarketDataCache",

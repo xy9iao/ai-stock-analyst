@@ -158,10 +158,35 @@ def test_extract_bulk_routes_through_gateway(monkeypatch: pytest.MonkeyPatch) ->
     assert tools.extract_bulk(None, "s", [], "x") == "No texts provided."
 
 
+def test_search_documents_formats_passages(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+
+    chunk = SimpleNamespace(
+        id=7,
+        title="NVDA article",
+        published_at=None,
+        source_url="https://x/a",
+        content="Data-center revenue grew 40%. " * 40,
+    )
+    monkeypatch.setattr(
+        tools.retrieval, "hybrid_search", lambda db, q, ticker=None, top_k=8: [chunk]
+    )
+    out = tools.search_documents(None, "s", "revenue growth")
+    assert "[chunk:7]" in out and "https://x/a" in out
+    assert len(out) < 900  # passage truncated for loop-resend economy
+
+
+def test_search_documents_empty_corpus_message(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(tools.retrieval, "hybrid_search", lambda db, q, ticker=None, top_k=8: [])
+    out = tools.search_documents(None, "s", "anything")
+    assert "search_news" in out  # points the model at the fallback tool
+
+
 def test_registry_schemas_match_functions() -> None:
     assert set(tools.TOOLS) == {
         "get_price_history",
         "get_financials",
+        "search_documents",
         "search_news",
         "compute_indicators",
         "extract_bulk",

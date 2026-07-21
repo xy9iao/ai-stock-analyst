@@ -1,0 +1,30 @@
+{
+  "_comment": "Citation eval cases (Phase 14, core — CC-authored on owner override, owner-reviewed at the merge gate). A case = {id, query, cited_atom}; pass = some memo line containing the atom carries a [chunk:N] tag AND a cited chunk contains the atom. Atom rules (learned from live failures): (1) DOCUMENT-ONLY — if any other tool can produce the fact (tickers -> price history!), the model will source it there, untagged, correctly: prefer people/venues/deals over tickers and numbers; (2) UNIQUELY TIED to one source context, or the model attaches a neighboring chunk's tag; (3) the query may NAME the subject (the gate tests attribution, not spontaneous surfacing) but naming a ticker steers the model to price tools — see rule 1. Inspect the corpus with: uv run python -m eval.corpus <term>. Re-author when the corpus refreshes (known maintenance).",
+  "cases": [
+    {
+      "id": "amd-advancing-ai-event",
+      "query": "what upcoming AMD events could move the stock?",
+      "cited_atom": "Advancing AI"
+    },
+    {
+      "id": "buffett-berkshire-plans",
+      "query": "what does recent coverage report about Warren Buffett's plans for his Berkshire stake?",
+      "cited_atom": "Buffett"
+    },
+    {
+      "id": "amd-vs-navitas",
+      "query": "how does AMD's revenue picture compare with Navitas Semiconductor?",
+      "cited_atom": "Navitas"
+    },
+    {
+      "id": "ai-capex-equipment-suppliers",
+      "query": "which semiconductor equipment suppliers raised their forecasts recently and why does it matter for the AI trade?",
+      "cited_atom": "ASML"
+    },
+    {
+      "id": "nvda-chip-compute-deals",
+      "query": "what recently reported compute deals involve Nvidia chips?",
+      "cited_atom": "Anthropic"
+    }
+  ]
+}

@@ -198,12 +198,40 @@ agent-path prompt tokens cache-served, measured 2026-07-17).
 
 **Regression gate:** `backend/eval/` holds 20 labeled research cases scored by
 deterministic key-fact coverage (`uv run python -m eval.run`; `--record` moves the
-baseline). Local-only, never CI. Per CLAUDE.md, any change to prompts, models, or
-retrieval parameters runs it before merge; a score below baseline − tolerance blocks.
+baseline) plus 5 citation cases (`--citations`: the cited chunk must contain the
+expected atom). Local-only, never CI. Per CLAUDE.md, any change to prompts, models,
+or retrieval parameters runs it before merge; a score below baseline − tolerance
+blocks. Imperfect-case memos land in `eval/.last_failures.md` (gitignored) for
+diagnosis; `uv run python -m eval.corpus <term>` inspects the ingested corpus.
+
+## Hybrid RAG + Cited Reports (Phase 14)
+
+`modules/ai/rag/` — one retrieval code path serving two consumers: the pipeline's
+fixed retrieval step (single-stock reports) and the agent's `search_documents` tool.
+
+- **Ingestion** (`ingest.py`) — news URLs → trafilatura body extraction →
+  `chunking.chunk_text` (1800 chars, 200 overlap, sentence/whitespace boundary
+  snapping; deterministic so `(source_url, chunk_index)` stays citation-stable) →
+  `embeddings_client.embed_texts` (OpenAI `text-embedding-3-small`, the single
+  embedding call site, `kind='embed'` rows in `llm_calls`) → `document_chunks`
+  (pgvector `vector(1536)`). Idempotent per URL (delete-then-insert); per-doc
+  failures are logged and skipped.
+- **Retrieval** (`retrieval.py`) — `hybrid_search`: pgvector cosine scan (no ANN
+  index — corpus-size call) + Postgres FTS candidate pool (OR-joined
+  `websearch_to_tsquery` for recall, GIN expression index) rescored with real BM25
+  (`rank_bm25`, pool-relative IDF), fused with RRF (k=60, rank-based, fuse before
+  truncating to top-8; agent tool takes top-5). Vector-path failure degrades to
+  lexical-only — retrieval never takes a report down.
+- **Citations** (`citations.py`) — prompts inject Sources blocks tagged
+  `[chunk:id]`; the model cites by copying tags. Save-time rewrite turns valid tags
+  into numbered links + a `## Sources` section in the stored Markdown (citations
+  survive export); validation is deterministic set-membership (pipeline: retrieved
+  set + one corrective retry; agent: DB existence — weaker, known limit); invalid
+  tags are stripped with a visible note, `[unverified]` renders as a badge.
 
 ## Testing
 
-`backend/tests/` holds the pytest suite (96 tests): `conftest.py` provides a `client` fixture backed by in-memory SQLite via a `get_db` override; market/news/financials providers and the LLM are monkeypatched at their factory/call seams, so tests run with **no network and no API cost**. `uv run pytest` also reports coverage (`pytest-cov`, measured — not gated).
+`backend/tests/` holds the pytest suite (145 tests): `conftest.py` provides a `client` fixture backed by in-memory SQLite via a `get_db` override; market/news/financials providers and the LLM are monkeypatched at their factory/call seams, so tests run with **no network and no API cost**. `uv run pytest` also reports coverage (`pytest-cov`, measured — not gated).
 
 ## Health Endpoint
 

@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.core.errors import AppError
-from app.modules.ai import context, llm_client
+from app.modules.ai import context, llm_client, report_generator
 from app.modules.ai.agent import loop
 from app.modules.ai.agent.loop import ResearchResult
 
@@ -18,6 +18,8 @@ def fake_ai(monkeypatch: pytest.MonkeyPatch) -> None:
         context, "build_single_stock_context", lambda db, ticker, session_id: f"ctx:{ticker}"
     )
     monkeypatch.setattr(context, "build_portfolio_context", lambda db, session_id: "portfolio ctx")
+    # No corpus in these tests: the fixed retrieval step degrades to an uncited report.
+    monkeypatch.setattr(report_generator.retrieval, "hybrid_search", lambda db, q, ticker=None: [])
 
 
 @pytest.fixture
