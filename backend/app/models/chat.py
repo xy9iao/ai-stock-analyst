@@ -10,6 +10,9 @@ class ChatSession(SessionScopedMixin, TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str | None] = mapped_column(String(255))
+    # Phase 15: the running summary of compressed-away turns (None until the
+    # first compression event). Persisted so a restart never re-summarizes.
+    summary: Mapped[str | None] = mapped_column(Text)
 
     messages: Mapped[list["ChatMessage"]] = relationship(
         back_populates="session",

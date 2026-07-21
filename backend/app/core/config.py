@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
     embedding_dimensions: int = 1536
 
+    # Phase 15 chat compression: operational knobs (unlike the chunker's constants —
+    # an operator may tune these per model context size; chat is not regression-gated).
+    chat_compress_threshold_tokens: int = 2500
+    chat_verbatim_messages: int = 12
+
     # Public-demo hardening. All OFF by default so local use is unchanged:
     # DEMO_MODE=true enables anonymous session isolation, per-session LLM caps,
     # and the LLM master switch (default off, enabled via the admin endpoint).
