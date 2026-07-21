@@ -76,3 +76,18 @@ def test_any_supporting_tag_on_the_line_passes(db_session) -> None:
 def test_matching_is_case_insensitive(db_session) -> None:
     memo = "- INSTINCT accelerators ramping [chunk:1]."
     assert check_citation(db_session, "c", memo, "instinct").passed
+
+
+def test_atom_in_untagged_heading_passes_via_cited_body_line(db_session) -> None:
+    # Headings legitimately carry no tags; any-line semantics must not fail on them.
+    memo = "## Instinct Momentum\n\n- Instinct GPUs are ramping [chunk:1]."
+    result = check_citation(db_session, "c", memo, "Instinct")
+    assert result.passed
+    assert result.memo_tag_count == 1
+
+
+def test_all_atom_lines_untagged_fails_even_if_memo_cites_elsewhere(db_session) -> None:
+    memo = "- Instinct ramp continues, untagged.\n- Unrelated claim [chunk:1]."
+    result = check_citation(db_session, "c", memo, "Instinct")
+    assert not result.passed and not result.cited
+    assert result.memo_tag_count == 1  # the diagnostic that distinguishes this failure

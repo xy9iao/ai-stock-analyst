@@ -30,6 +30,7 @@ from . import indicators as ind
 
 _MAX_NEWS_LIMIT = 10
 _MAX_PASSAGE_CHARS = 600  # tool outputs are resent every remaining loop step
+_AGENT_TOP_K = 5  # fewer passages than the pipeline's 8: loop history is paid per step
 _MAX_EXTRACT_TEXTS = 20
 _MAX_EXTRACT_CHARS = 8000
 _HISTORY_SAMPLE_POINTS = 15
@@ -174,7 +175,7 @@ def search_documents(db: Session, session_id: str, query: str, ticker: str = "")
     """Deep hybrid search (semantic + keyword) over ingested full article bodies.
     Returns the most relevant passages with stable [chunk:<id>] tags, title,
     date, and source URL — reference passages by their chunk tag."""
-    chunks = retrieval.hybrid_search(db, query, ticker=ticker or None)
+    chunks = retrieval.hybrid_search(db, query, ticker=ticker or None, top_k=_AGENT_TOP_K)
     if not chunks:
         return (
             f"No ingested documents matched '{query}'. The document corpus may not "
@@ -242,7 +243,8 @@ TOOLS: dict[str, ToolSpec] = {
             "search_documents",
             "Deep hybrid search (semantic + keyword) over ingested full article bodies; "
             "returns relevant passages with [chunk:<id>] tags and source URLs. Use for "
-            "evidence beyond headlines.",
+            "evidence beyond headlines. One broad query usually suffices — rephrasing "
+            "the same question returns largely the same passages.",
             {
                 "query": {"type": "string", "description": "What to look for, natural language"},
                 "ticker": {

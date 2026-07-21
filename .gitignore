@@ -41,3 +41,8 @@ interview-defense.md
 
 # Local teaching/learning process (never publish)
 teaching-protocol.md
+backend/eval/.last_failures.md
+
+# Codex-generated mirrors of CLAUDE.md/.claude — local only, never commit (teaching process stays out of the repo)
+.agents/
+AGENTS.md

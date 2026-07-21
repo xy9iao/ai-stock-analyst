@@ -168,14 +168,16 @@ def test_search_documents_formats_passages(monkeypatch: pytest.MonkeyPatch) -> N
         source_url="https://x/a",
         content="Data-center revenue grew 40%. " * 40,
     )
-    monkeypatch.setattr(tools.retrieval, "hybrid_search", lambda db, q, ticker=None: [chunk])
+    monkeypatch.setattr(
+        tools.retrieval, "hybrid_search", lambda db, q, ticker=None, top_k=8: [chunk]
+    )
     out = tools.search_documents(None, "s", "revenue growth")
     assert "[chunk:7]" in out and "https://x/a" in out
     assert len(out) < 900  # passage truncated for loop-resend economy
 
 
 def test_search_documents_empty_corpus_message(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(tools.retrieval, "hybrid_search", lambda db, q, ticker=None: [])
+    monkeypatch.setattr(tools.retrieval, "hybrid_search", lambda db, q, ticker=None, top_k=8: [])
     out = tools.search_documents(None, "s", "anything")
     assert "search_news" in out  # points the model at the fallback tool
 

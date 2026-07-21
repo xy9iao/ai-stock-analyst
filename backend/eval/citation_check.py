@@ -26,8 +26,10 @@ _TAG = re.compile(r"\[chunk:(\d+)\]")
 class CitationResult:
     case_id: str
     atom_found: bool  # the atom appears in the memo at all
-    cited: bool  # its line carries at least one [chunk:N] tag
-    supported: bool  # a cited chunk actually contains the atom
+    cited: bool  # at least one atom-bearing line carries a [chunk:N] tag
+    supported: bool  # some atom-bearing line's cited chunk contains the atom
+    memo_tag_count: int  # total [chunk:N] tags anywhere (diagnostic)
+    atom_lines: tuple[str, ...]  # atom-bearing lines, for failure diagnosis
 
     @property
     def passed(self) -> bool:
@@ -35,17 +37,27 @@ class CitationResult:
 
 
 def check_citation(db: Session, case_id: str, memo: str, cited_atom: str) -> CitationResult:
+    """Pass if ANY atom-bearing line is cited by a chunk containing the atom.
+
+    Any-line (not first-line) semantics: atoms recur across a memo — section
+    headings, tables, prose — and headings legitimately carry no tags. The
+    claim is 'this fact is cited somewhere it is stated', not 'everywhere'.
+    """
     atom = normalize(cited_atom)
-    line = next((ln for ln in memo.splitlines() if atom in normalize(ln)), None)
-    if line is None:
-        return CitationResult(case_id, atom_found=False, cited=False, supported=False)
+    memo_tag_count = len(_TAG.findall(memo))
+    lines = tuple(ln for ln in memo.splitlines() if atom in normalize(ln))
+    if not lines:
+        return CitationResult(case_id, False, False, False, memo_tag_count, ())
 
-    chunk_ids = [int(m) for m in _TAG.findall(line)]
-    if not chunk_ids:
-        return CitationResult(case_id, atom_found=True, cited=False, supported=False)
-
-    contents = db.scalars(
-        select(DocumentChunk.content).where(DocumentChunk.id.in_(chunk_ids))
-    ).all()
-    supported = any(atom in normalize(content) for content in contents)
-    return CitationResult(case_id, atom_found=True, cited=True, supported=supported)
+    cited = False
+    for line in lines:
+        chunk_ids = [int(m) for m in _TAG.findall(line)]
+        if not chunk_ids:
+            continue
+        cited = True
+        contents = db.scalars(
+            select(DocumentChunk.content).where(DocumentChunk.id.in_(chunk_ids))
+        ).all()
+        if any(atom in normalize(content) for content in contents):
+            return CitationResult(case_id, True, True, True, memo_tag_count, lines)
+    return CitationResult(case_id, True, cited, False, memo_tag_count, lines)

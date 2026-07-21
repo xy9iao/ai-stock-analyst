@@ -19,6 +19,7 @@ from eval.scoring import CaseScore, gate, score_case, set_score
 CASES_PATH = Path(__file__).parent / "cases.json"
 CITATION_CASES_PATH = Path(__file__).parent / "citation_cases.json"
 BASELINE_PATH = Path(__file__).parent / "baseline.json"
+FAILURES_PATH = Path(__file__).parent / ".last_failures.md"  # gitignored diagnostics
 SESSION_ID = "eval"
 DEFAULT_TOLERANCE = 0.05
 
@@ -27,6 +28,18 @@ def load_baseline() -> dict | None:
     if not BASELINE_PATH.exists():
         return None
     return json.loads(BASELINE_PATH.read_text())
+
+
+def write_failures(failing: list[tuple[str, str]]) -> None:
+    """Persist imperfect cases' memos so failures are inspectable, not mysteries."""
+    if not failing:
+        FAILURES_PATH.unlink(missing_ok=True)
+        return
+    parts = ["# Imperfect cases, last run\n"]
+    for case_id, memo in failing:
+        parts.append(f"\n---\n\n## {case_id}\n\n{memo}\n")
+    FAILURES_PATH.write_text("".join(parts))
+    print(f"imperfect-case memos written to {FAILURES_PATH}")
 
 
 def main() -> int:
@@ -52,6 +65,7 @@ def main() -> int:
 
     results: list[CaseScore] = []
     notes: dict[str, str] = {}
+    failing: list[tuple[str, str]] = []
     db = SessionLocal()
     try:
         for case in cases:
@@ -61,6 +75,8 @@ def main() -> int:
                     case["id"], run.memo, case["key_facts"], case.get("must_not", ())
                 )
                 notes[case["id"]] = f"steps={run.steps}" + (" LIMIT" if run.step_limit_hit else "")
+                if result.score < 1.0:
+                    failing.append((case["id"], run.memo))
             except Exception as exc:  # a broken case must not sink the whole run
                 result = score_case(case["id"], "", case["key_facts"], ())
                 notes[case["id"]] = f"CRASHED: {exc}"
@@ -73,6 +89,7 @@ def main() -> int:
     finally:
         db.close()
 
+    write_failures(failing)
     score = set_score(results)
     baseline = load_baseline()
     print(f"\nset score: {score:.3f}  over {len(results)} cases")
@@ -115,15 +132,18 @@ def run_citation_cases(only: str | None = None) -> int:
             return 2
 
     failures = 0
+    failing: list[tuple[str, str]] = []
     db = SessionLocal()
     try:
         for case in cases:
+            run = None
             try:
                 run = run_research(db, SESSION_ID, case["query"])
                 result = check_citation(db, case["id"], run.memo, case["cited_atom"])
                 detail = (
                     f"atom_found={result.atom_found} cited={result.cited} "
-                    f"supported={result.supported} steps={run.steps}"
+                    f"supported={result.supported} memo_tags={result.memo_tag_count} "
+                    f"steps={run.steps}"
                 )
             except Exception as exc:
                 result = None
@@ -131,9 +151,15 @@ def run_citation_cases(only: str | None = None) -> int:
             passed = result is not None and result.passed
             failures += 0 if passed else 1
             print(f"  {case['id']:32s} {'PASS' if passed else 'FAIL'}  {detail}")
+            if result is not None and not passed:
+                for line in result.atom_lines[:3]:
+                    print(f"      atom line: {line.strip()[:120]}")
+                if run is not None:
+                    failing.append((case["id"], run.memo))
     finally:
         db.close()
 
+    write_failures(failing)
     print(f"\ncitation cases: {len(cases) - failures}/{len(cases)} passed")
     return 0 if failures == 0 else 1
 
