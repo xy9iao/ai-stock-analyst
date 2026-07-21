@@ -25,6 +25,12 @@ def get_session(db: Session, session_id: int, demo_session_id: str) -> ChatSessi
     return session
 
 
+def set_summary(db: Session, session: ChatSession, summary: str) -> None:
+    """Persist the running compression summary (Phase 15) on its session row."""
+    session.summary = summary
+    db.commit()
+
+
 def list_sessions(db: Session, demo_session_id: str, limit: int = 50) -> list[ChatSession]:
     rows = db.scalars(
         select(ChatSession)
