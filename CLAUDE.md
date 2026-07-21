@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Local-first, single-user AI stock **research** assistant (analysis & decision support — **not** a trading bot, brokerage, or execution system). Personal/portfolio project; target is an interview-grade full-stack AI system. **v0 is shipped and frozen** (`v0.1.0`, live demo at https://ai-stock-analyst-pi.vercel.app; demo hardening: `DEMO_MODE` anonymous sessions + three-layer LLM cost defense + `llm_calls`/`/api/stats` observability — `docs/guides/deployment.md`). **The active version is v1 — Agent Layer (Phases 13–15)**, fully scoped in `docs/roadmap.md`; anything not listed there is out of scope by default. Phase 13 (Research Agent) is done; Phase 13.5 (local MCP wrapper) is next. New feature ideas go to GitHub issues.
+Local-first, single-user AI stock **research** assistant (analysis & decision support — **not** a trading bot, brokerage, or execution system). Personal/portfolio project; target is an interview-grade full-stack AI system. **v0 is shipped and frozen** (`v0.1.0`, live demo at https://ai-stock-analyst-pi.vercel.app; demo hardening: `DEMO_MODE` anonymous sessions + three-layer LLM cost defense + `llm_calls`/`/api/stats` observability — `docs/guides/deployment.md`). **The active version is v1 — Agent Layer (Phases 13–15)**, fully scoped in `docs/roadmap.md`; anything not listed there is out of scope by default. Phases 13 (Research Agent) and 14 (hybrid RAG + cited reports) are done; Phase 13.5 (local MCP wrapper) is next (deferred to 2026-07-28), then Phase 15. New feature ideas go to GitHub issues.
 
 This is the developer's first serious full-stack project and a learning vehicle. Build it like real production software, but keep explanations beginner-friendly when introducing a new tool or pattern.
 
@@ -18,7 +18,7 @@ Do not create per-phase "handoff" documents — the active plan lives in `docs/r
 
 ## Phase discipline
 
-**Check `docs/roadmap.md` for the current active phase.** v0 (Phases 0–12) is frozen. **v1 = Phases 13–15** (Research Agent tool loop, local MCP, hybrid RAG + citations, compression + injection defense) — **Phase 13 done; Phase 13.5 next**. Binding v1 rules: no agent frameworks (Decision 010), routing by request type is a design decision and chat stays non-agentic (Decision 011), no new LLM code paths outside `llm_client`, explicit non-goals in the roadmap's v1 Principles.
+**Check `docs/roadmap.md` for the current active phase.** v0 (Phases 0–12) is frozen. **v1 = Phases 13–15** (Research Agent tool loop, local MCP, hybrid RAG + citations, compression + injection defense) — **Phases 13 & 14 done; 13.5 next (2026-07-28), then 15**. Binding v1 rules: no agent frameworks (Decision 010), routing by request type is a design decision and chat stays non-agentic (Decision 011), no new LLM code paths outside `llm_client`, explicit non-goals in the roadmap's v1 Principles.
 
 - Build **only** what the active phase (or an explicitly assigned GitHub issue) scopes. Do **not** add new features to v0 — deferred ideas live as issues (#14 Home news/financials, #15 ticker autocomplete, #16 E2E).
 - **Do not merge, reorder, or fast-forward phases** to "save time," even if it seems efficient. The phase-by-phase boundary is intentional — it exists so the developer can verify architectural understanding before moving on.
