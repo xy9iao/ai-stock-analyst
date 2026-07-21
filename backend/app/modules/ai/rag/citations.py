@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import DocumentChunk
+from app.modules.ai.rag.sanitize import demarcate
 
 _TAG = re.compile(r" ?\[chunk:(\d+)\]")
 _UNVERIFIED_BADGE = "**[⚠ unverified]**"
@@ -27,7 +28,7 @@ def format_sources(chunks: list[DocumentChunk]) -> str:
         date = str(chunk.published_at)[:10] if chunk.published_at else "n.d."
         lines.append(
             f"[chunk:{chunk.id}] {chunk.title} ({date}) {chunk.source_url}\n"
-            f"{chunk.content[:_SOURCE_PREVIEW_CHARS]}"
+            f"{demarcate(chunk.content[:_SOURCE_PREVIEW_CHARS])}"
         )
     return "\n\n".join(lines)
 
