@@ -2,6 +2,8 @@
 
 Build history by phase — the **accurate, frozen record** of what was actually built, newest first. The active phase lives in `docs/roadmap.md`. Per the Phase close-out rules in `CLAUDE.md`, append a new section here when a phase is finished; the active phase keeps a dated work log at the top until then.
 
+> **v1 — Agent Layer complete (2026-07-21).** Phases 13–15 shipped: hand-written research agent, hybrid RAG with cited reports, long-chat compression, and indirect-injection defense — behind the single `llm_client` gateway. Measured: 79% agent-path prompt-cache hit, ~20% net compression saving, regression gate at 0.983 + citation + poisoned-chunk cases. Phase 13.5 (local MCP wrapper) was descoped to an optional post-v1 add-on. The project is now in **demand-gated maintenance**.
+
 ## Phase 15 — Compression + Injection Defense (done 2026-07-21)
 
 The last v1 feature phase. Long chats stay affordable via compression; RAG-fed reports resist poisoned public content. Built 2026-07-21 in PR #34.

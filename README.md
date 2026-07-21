@@ -47,9 +47,17 @@ A **modular monolith**: the backend owns everything external (database, market/n
 graph LR
   B[Browser] --> FE["Next.js 15 frontend<br/>:3000"]
   FE -->|"REST /api<br/>(same-origin proxy)"| BE["FastAPI backend :8000<br/>modules: router → service → repository"]
-  BE --> DB[("PostgreSQL<br/>holdings · reports · chat · cache")]
+  BE -->|"request-type router"| PIPE["report pipeline<br/>(compact context)"]
+  BE --> AGENT["research agent<br/>(≤8-step tool loop)"]
+  BE --> CHAT["chat<br/>(window + summary compression)"]
+  PIPE --> RAG["hybrid retrieval<br/>pgvector + FTS→BM25, RRF<br/>demarcated + cited"]
+  AGENT --> RAG
+  PIPE --> LLM["DeepSeek LLM<br/>via llm_client gateway"]
+  AGENT --> LLM
+  CHAT --> LLM
+  RAG --> DB[("PostgreSQL 16 + pgvector<br/>holdings · reports · chat<br/>document_chunks · llm_calls")]
   BE -->|"provider abstraction<br/>+ cache-aside"| EXT["yfinance<br/>market · news · financials"]
-  BE -->|"modules/ai only"| LLM["DeepSeek LLM<br/>(OpenAI-compatible)"]
+  RAG -->|"embeddings"| EMB["OpenAI<br/>text-embedding-3-small"]
 ```
 
 Key design decisions:
@@ -57,8 +65,10 @@ Key design decisions:
 - **Layered modules** — each business area is `backend/app/modules/<name>/` with `router → service → repository` + Pydantic schemas; modules call each other in Python, never over HTTP.
 - **Provider abstraction** — market/news/financial sources are `typing.Protocol` interfaces with config-selected implementations, so yfinance can be swapped for a paid API without touching business logic.
 - **One LLM gateway** — every LLM call routes through `modules/ai/llm_client.py`: one place for prompt safety boundaries, model switching, and cost control.
-- **Compact context injection** — the LLM receives small, curated context blocks built from Postgres (never raw API payloads or full articles). RAG/agent workflows are deliberately deferred to keep v0 explainable.
-- **AI report data flow:** request → load holdings/watchlist from DB → fetch cached market/news → `prompt_builder` assembles compact context → `llm_client` calls the LLM → Markdown saved to `reports` → rendered in the frontend.
+- **Compact context injection** — the LLM receives small, curated context blocks built from Postgres (never raw API payloads or full articles).
+- **Request-type routing (v1)** — closed data needs (reports) take a fixed pipeline; open-ended questions take a hand-written agent loop; chat stays single-call. One `llm_client` gateway underlies all three ([Decision 011](docs/planning/decisions.md)).
+- **Hybrid RAG with citations (v1)** — pgvector cosine + Postgres FTS rescored with BM25, RRF-fused; retrieved chunks are demarcated against injection and their claims carry clickable citations ([Decisions 012–013](docs/planning/decisions.md)).
+- **Measured (v1):** 79% of agent-path prompt tokens served from the provider's prefix cache; ~20% net input-token saving from long-chat compression (44–70% per compression event); a local regression gate (coverage + citation + poisoned-chunk cases) guards every prompt/model change.
 
 More depth in the guides: [Backend](docs/guides/backend.md) · [API](docs/guides/api.md) · [Database](docs/guides/database.md) · [Frontend & design system](docs/guides/frontend.md) · [Development workflow](docs/guides/development-workflow.md) · [Deployment](docs/guides/deployment.md)
 
@@ -149,13 +159,16 @@ CI (GitHub Actions) enforces exactly these gates on every push/PR: backend **ruf
 
 ## Status & Roadmap
 
-**v0 is complete** — all 12 phases: planning, repo/CI setup, backend + DB foundation, holdings/watchlist CRUD, market data, news/financials, AI reports, chat, Markdown export, UI polish, test suites, README, and the demo-hardened deployment. History in the [CHANGELOG](CHANGELOG.md); phase summaries in the [roadmap](docs/roadmap.md).
+**v0 complete** (12 phases) and **v1 complete** (2026-07-21) — the Agent Layer: a hand-written tool-use research agent, hybrid RAG with cited reports, long-chat compression, and indirect-injection defense, all behind the single `llm_client` gateway with per-route cost observability. History in the [CHANGELOG](CHANGELOG.md); phase summaries and decisions in the [roadmap](docs/roadmap.md) and [decisions](docs/planning/decisions.md).
 
-**Next up**
+**v1 measured:** 79% of agent-path prompt tokens served from the provider's prefix cache (frozen static prefix + append-only history); ~20% net input-token saving from long-chat compression (44–70% per compression event); regression gate at coverage 0.983 with citation + poisoned-chunk cases.
 
-- Backlog: news + financials on the Home page ([#14](https://github.com/xy9iao/ai-stock-analyst/issues/14)), ticker autocomplete ([#15](https://github.com/xy9iao/ai-stock-analyst/issues/15)), Playwright E2E ([#16](https://github.com/xy9iao/ai-stock-analyst/issues/16))
-- **v1 (in progress):** agent-based research workflows — a hand-written tool-use loop powering an open-ended Research endpoint, hybrid RAG with cited reports, context compression, and injection defense. The `llm_calls` log already carries `route`/`steps` fields, which the agent path fills for per-route cost observability.
-- **v1 measured so far:** 79% of agent-path prompt tokens served from the provider's prefix cache (frozen static prefix + append-only history); long-chat compression saves ~20% net input tokens over a 12-message conversation (per-message prompts drop 44–70% at compression events, net of summarization cost, compounding with conversation length). Full numbers land here at v1 close-out.
+The project is now in **demand-gated maintenance** — new work happens when the same need shows up 3+ times in real use.
+
+**Add-ons & backlog (post-v1, unscheduled):**
+
+- Local MCP wrapper (FastMCP, stdio only) exposing the agent's tools to Claude Code — an optional integration, not a v1 requirement
+- News + financials on the Home page ([#14](https://github.com/xy9iao/ai-stock-analyst/issues/14)), ticker autocomplete ([#15](https://github.com/xy9iao/ai-stock-analyst/issues/15)), Playwright E2E ([#16](https://github.com/xy9iao/ai-stock-analyst/issues/16)), live agent-run status in the UI ([#32](https://github.com/xy9iao/ai-stock-analyst/issues/32))
 
 ## Contributing
 
