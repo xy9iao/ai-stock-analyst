@@ -153,6 +153,7 @@ CI (GitHub Actions) enforces exactly these gates on every push/PR: backend **ruf
 
 - Backlog: news + financials on the Home page ([#14](https://github.com/xy9iao/ai-stock-analyst/issues/14)), ticker autocomplete ([#15](https://github.com/xy9iao/ai-stock-analyst/issues/15)), Playwright E2E ([#16](https://github.com/xy9iao/ai-stock-analyst/issues/16))
 - **v1 (in progress):** agent-based research workflows — a hand-written tool-use loop powering an open-ended Research endpoint, hybrid RAG with cited reports, context compression, and injection defense. The `llm_calls` log already carries `route`/`steps` fields, which the agent path fills for per-route cost observability.
+- **v1 measured so far:** 79% of agent-path prompt tokens served from the provider's prefix cache (frozen static prefix + append-only history); long-chat compression saves ~20% net input tokens over a 12-message conversation (per-message prompts drop 44–70% at compression events, net of summarization cost, compounding with conversation length). Full numbers land here at v1 close-out.
 
 ## Contributing
 
