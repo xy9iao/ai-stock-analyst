@@ -80,7 +80,7 @@ More depth in the guides: [Backend](docs/guides/backend.md) · [API](docs/guides
 | Frontend | Next.js 15 (App Router), React 19, TypeScript (strict), Tailwind CSS, shadcn-style components, `pnpm` |
 | AI | DeepSeek via the OpenAI-compatible SDK — centralized in one backend module |
 | Data | PostgreSQL 16, yfinance behind a provider abstraction, Postgres-backed cache |
-| Testing | pytest + pytest-cov (43 backend tests), Vitest + React Testing Library (28 frontend tests) |
+| Testing | pytest + pytest-cov (163 backend tests + local `eval/` regression gate), Vitest + React Testing Library (28 frontend tests) |
 | Tooling / CI | Ruff, ESLint 9, GitHub Actions, Docker Compose |
 
 ## Getting Started
@@ -167,8 +167,7 @@ The project is now in **demand-gated maintenance** — new work happens when the
 
 **Add-ons & backlog (post-v1, unscheduled):**
 
-- Local MCP wrapper (FastMCP, stdio only) exposing the agent's tools to Claude Code — an optional integration, not a v1 requirement
-- News + financials on the Home page ([#14](https://github.com/xy9iao/ai-stock-analyst/issues/14)), ticker autocomplete ([#15](https://github.com/xy9iao/ai-stock-analyst/issues/15)), Playwright E2E ([#16](https://github.com/xy9iao/ai-stock-analyst/issues/16)), live agent-run status in the UI ([#32](https://github.com/xy9iao/ai-stock-analyst/issues/32))
+- Local MCP wrapper for the agent's tools ([#35](https://github.com/xy9iao/ai-stock-analyst/issues/35)), news + financials on the Home page ([#14](https://github.com/xy9iao/ai-stock-analyst/issues/14)), ticker autocomplete ([#15](https://github.com/xy9iao/ai-stock-analyst/issues/15)), Playwright E2E ([#16](https://github.com/xy9iao/ai-stock-analyst/issues/16)), live agent-run status in the UI ([#32](https://github.com/xy9iao/ai-stock-analyst/issues/32))
 
 ## Contributing
 
