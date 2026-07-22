@@ -7,7 +7,7 @@
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=nextdotjs)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
 
-A **local-first, AI-powered stock research assistant** — track your holdings and watchlist, pull live market data and news, generate AI research reports, and chat with an investment assistant that knows your portfolio. Full-stack: FastAPI + PostgreSQL backend, Next.js frontend, one-command Docker dev environment.
+A **full-stack, local-first AI stock-research assistant**: a hand-written research agent, hybrid RAG with **cited** reports, long-chat compression, and injection defense — all behind one LLM gateway, guarded by a local regression gate. FastAPI + PostgreSQL/pgvector backend, Next.js 15 frontend, one-command Docker dev, deployed at **$0/mo**.
 
 > **Disclaimer:** This project is for **research and educational use only** — it is not a trading bot, brokerage app, or financial advice. Market data may be delayed or inaccurate; verify independently before making decisions.
 
@@ -16,28 +16,6 @@ A **local-first, AI-powered stock research assistant** — track your holdings a
 🔗 **Demo: [ai-stock-analyst-pi.vercel.app](https://ai-stock-analyst-pi.vercel.app)** — deployed on Vercel + Render + Neon via [the deployment guide](docs/guides/deployment.md)
 
 The demo is a shared, unauthenticated instance hardened for public exposure: every visitor gets an isolated **anonymous session** (cookie-scoped data, 7-day TTL — no account needed), and LLM cost is protected by **three independent layers**: a prepaid budget hard cap, an admin-controlled master switch with a TTL, and per-session limits (3 reports / 20 chat replies, counted in LLM calls). First load may take up to a minute if the free-tier backend was asleep. Use **"New demo session"** in the footer to start fresh.
-
-## Screenshots
-
-| Holdings | Stock detail |
-| --- | --- |
-| ![Holdings — portfolio table with live prices and gain/loss](docs/images/holdings.png) | ![Stock detail — price chart with range switching](docs/images/stock-detail.png) |
-
-| AI report | Chat |
-| --- | --- |
-| ![AI report — generated Markdown research report](docs/images/reports.png) | ![Chat — assistant with portfolio context toggles](docs/images/chat.png) |
-
-## Features
-
-- **Holdings & watchlist** — CRUD with validation; live prices, day change, market value, and gain/loss per position.
-- **Market data** — quotes and price/volume charts (1d / 1w / 1m / 1y) via a swappable provider abstraction (yfinance today), cached in Postgres.
-- **News & financials** — company headlines and compact financial snapshots, used as context for AI analysis.
-- **AI reports** — single-stock and portfolio research reports: the backend assembles a compact context from your data, calls the LLM (DeepSeek, OpenAI-compatible), and stores the result as Markdown — exportable with one click. Reports carry **clickable source citations** grounded in hybrid retrieval (pgvector + Postgres FTS→BM25, RRF-fused).
-- **Research agent** — a hand-written tool-use loop (5 read-only tools + document search, ≤8 steps) that answers open-ended questions by gathering evidence and files an archived memo; routed separately from the fixed report pipeline.
-- **Chat** — a multi-turn investment assistant with **toggleable context injection** (holdings / watchlist / a focus ticker / recent reports); long conversations stay affordable via **sliding-window + running-summary compression**.
-- **Trustworthy by design** — every LLM claim in a report is cited or marked unverified; retrieved public content is demarcated + sanitized against indirect prompt injection (OWASP LLM01); a local regression gate (coverage + citation + poisoned-chunk cases) blocks quality drift on any prompt/model change.
-- **Beginner-friendly UI** — finance-term tooltips, loading/empty/error states, responsive layout, and a persistent not-financial-advice notice.
-- **Demo-hardened deployment** — anonymous session isolation (state isolation without an auth system), a three-layer LLM cost defense, and per-call token/latency observability (`llm_calls` table + `/api/stats`).
 
 ## Architecture
 
@@ -60,17 +38,46 @@ graph LR
   RAG -->|"embeddings"| EMB["OpenAI<br/>text-embedding-3-small"]
 ```
 
-Key design decisions:
+## By the numbers (measured, v1)
 
-- **Layered modules** — each business area is `backend/app/modules/<name>/` with `router → service → repository` + Pydantic schemas; modules call each other in Python, never over HTTP.
-- **Provider abstraction** — market/news/financial sources are `typing.Protocol` interfaces with config-selected implementations, so yfinance can be swapped for a paid API without touching business logic.
-- **One LLM gateway** — every LLM call routes through `modules/ai/llm_client.py`: one place for prompt safety boundaries, model switching, and cost control.
-- **Compact context injection** — the LLM receives small, curated context blocks built from Postgres (never raw API payloads or full articles).
-- **Request-type routing (v1)** — closed data needs (reports) take a fixed pipeline; open-ended questions take a hand-written agent loop; chat stays single-call. One `llm_client` gateway underlies all three ([Decision 011](docs/planning/decisions.md)).
-- **Hybrid RAG with citations (v1)** — pgvector cosine + Postgres FTS rescored with BM25, RRF-fused; retrieved chunks are demarcated against injection and their claims carry clickable citations ([Decisions 012–013](docs/planning/decisions.md)).
-- **Measured (v1):** 79% of agent-path prompt tokens served from the provider's prefix cache; ~20% net input-token saving from long-chat compression (44–70% per compression event); a local regression gate (coverage + citation + poisoned-chunk cases) guards every prompt/model change.
+| Metric | Value | Source |
+| --- | --- | --- |
+| Agent-path prompt-cache hit | **79%** of prompt tokens served from cache | `llm_calls.cached_tokens`, repeated-query run |
+| Long-chat compression | **~20% net** input tokens saved / 12-msg chat (44–70% per compression event) | `llm_calls` before/after, `kind='summarize'` |
+| Regression gate | baseline **0.983**; 20 coverage + 5 citation + 3 injection cases | `backend/eval/` (`uv run python -m eval.run`) |
+| Injection defense | **3/3** poisoned-chunk cases neither followed nor cited | `eval/run.py --poisoned` |
+| Cost defense | **3 independent layers**; demo worst case ≈ 30 LLM calls/session | `docs/guides/deployment.md` |
+| Automated tests | **164 backend + 28 frontend**, CI-gated | `pytest` / `vitest` |
+
+Key design decisions: layered modules (Python calls, never HTTP) · provider abstraction (swap yfinance in one class) · **one LLM gateway** for every call (safety boundary, model switch, cost control) · request-type routing ([Decision 011](docs/planning/decisions.md)) · hybrid RAG on Postgres, no dedicated vector DB ([Decision 012](docs/planning/decisions.md)) · injection defense sized to blast radius ([Decision 013](docs/planning/decisions.md)).
 
 More depth in the guides: [Backend](docs/guides/backend.md) · [API](docs/guides/api.md) · [Database](docs/guides/database.md) · [Frontend & design system](docs/guides/frontend.md) · [Development workflow](docs/guides/development-workflow.md) · [Deployment](docs/guides/deployment.md)
+
+## Screenshots
+
+| Research agent | Cited report |
+| --- | --- |
+| ![Research agent — free-text question answered by the tool-use loop, filed as an archived memo](docs/images/research-agent.png) | ![Cited report — claims carry clickable citations backed by a Sources section](docs/images/cited-report.png) |
+
+| Holdings | Stock detail |
+| --- | --- |
+| ![Holdings — portfolio table with live prices and gain/loss](docs/images/holdings.png) | ![Stock detail — price chart with range switching](docs/images/stock-detail.png) |
+
+| AI report | Chat |
+| --- | --- |
+| ![AI report — generated Markdown research report](docs/images/reports.png) | ![Chat — assistant with portfolio context toggles](docs/images/chat.png) |
+
+## Features
+
+- **Holdings & watchlist** — CRUD with validation; live prices, day change, market value, and gain/loss per position.
+- **Market data** — quotes and price/volume charts (1d / 1w / 1m / 1y) via a swappable provider abstraction (yfinance today), cached in Postgres.
+- **News & financials** — company headlines and compact financial snapshots, used as context for AI analysis.
+- **AI reports** — single-stock and portfolio research reports: the backend assembles a compact context from your data, calls the LLM (DeepSeek, OpenAI-compatible), and stores the result as Markdown — exportable with one click. Reports carry **clickable source citations** grounded in hybrid retrieval (pgvector + Postgres FTS→BM25, RRF-fused).
+- **Research agent** — a hand-written tool-use loop (5 read-only tools + document search, ≤8 steps) that answers open-ended questions by gathering evidence and files an archived memo; routed separately from the fixed report pipeline.
+- **Chat** — a multi-turn investment assistant with **toggleable context injection** (holdings / watchlist / a focus ticker / recent reports); long conversations stay affordable via **sliding-window + running-summary compression**.
+- **Trustworthy by design** — every LLM claim in a report is cited or marked unverified; retrieved public content is demarcated + sanitized against indirect prompt injection (OWASP LLM01); a local regression gate (coverage + citation + poisoned-chunk cases) blocks quality drift on any prompt/model change.
+- **Beginner-friendly UI** — finance-term tooltips, loading/empty/error states, responsive layout, and a persistent not-financial-advice notice.
+- **Demo-hardened deployment** — anonymous session isolation (state isolation without an auth system), a three-layer LLM cost defense, and per-call token/latency observability (`llm_calls` table + `/api/stats`).
 
 ## Tech Stack
 
@@ -80,7 +87,7 @@ More depth in the guides: [Backend](docs/guides/backend.md) · [API](docs/guides
 | Frontend | Next.js 15 (App Router), React 19, TypeScript (strict), Tailwind CSS, shadcn-style components, `pnpm` |
 | AI | DeepSeek via the OpenAI-compatible SDK — centralized in one backend module |
 | Data | PostgreSQL 16, yfinance behind a provider abstraction, Postgres-backed cache |
-| Testing | pytest + pytest-cov (163 backend tests + local `eval/` regression gate), Vitest + React Testing Library (28 frontend tests) |
+| Testing | pytest + pytest-cov (164 backend tests + local `eval/` regression gate), Vitest + React Testing Library (28 frontend tests) |
 | Tooling / CI | Ruff, ESLint 9, GitHub Actions, Docker Compose |
 
 ## Getting Started
@@ -89,6 +96,7 @@ More depth in the guides: [Backend](docs/guides/backend.md) · [API](docs/guides
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (the only hard requirement for the quick start)
 - A [DeepSeek API key](https://platform.deepseek.com/) — optional; only needed for AI reports and chat
+- An [OpenAI API key](https://platform.openai.com/) — optional; only needed for RAG ingestion/retrieval (report citations)
 
 ### Quick start (one command)
 

@@ -1,6 +1,8 @@
 > **v0 Outcome (2026-07-02).** Shipped as designed: simple **DB-context injection** (compact context blocks, no raw payloads), every LLM call through the single `modules/ai/llm_client.py` gateway (DeepSeek, OpenAI-compatible), the advice-safety boundary in the system prompt, Markdown reports stored in `reports`. **RAG and agent workflows stayed deferred.**
 >
 > **v1 planned (2026-07-03):** the deferral is resolved — v1 adds a hand-written tool-use agent loop + routing experiment (Phase 13), local MCP (13.5), hybrid RAG with cited reports (14), and context compression + injection defense (15). Scope lives in `docs/roadmap.md`; architecture decision in `decisions.md` Decision 010. Where this plan conflicts with sketches below, the roadmap wins.
+>
+> **v1 shipped (2026-07-21).** Delivered as: hand-written agent loop (Phase 13); **routing became a design decision, not an experiment** (Decision 011 — closed data needs → pipeline, open-ended → agent, chat stays non-agentic); hybrid RAG + cited reports (Phase 14, Decision 012); compression + injection defense (Phase 15, Decision 013). **Phase 13.5 MCP was descoped to an optional post-v1 add-on** ([issue #35](https://github.com/xy9iao/ai-stock-analyst/issues/35)). Project is now in demand-gated maintenance.
 
 ## 1. Purpose
 

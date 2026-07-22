@@ -1,4 +1,6 @@
 > **v0 Outcome (2026-07-02).** The eight v0 planning decisions below held through v0 unchanged: Obsidian→repo docs, React+FastAPI+PostgreSQL+Docker, modular monolith, AI inside the backend (`modules/ai/`), PostgreSQL, local-first with deploy-ready design, provider abstraction (yfinance in v0), analysis-only (no trade execution). Two were added later: **009** (demo deployment — anonymous sessions + three-layer cost defense) at Phase 12, and **010** (v1 hand-written agent loop, no frameworks) at v1 planning.
+>
+> **v1 shipped (2026-07-21).** Three more decisions landed during v1 and held: **011** (routing by request type, chat stays non-agentic), **012** (hybrid retrieval on Postgres — pgvector + FTS→BM25, RRF; no dedicated vector DB), **013** (indirect-injection defense depth: demarcation + structural sanitization + read-only tools, no LLM classifier). Project is now in demand-gated maintenance; MCP (Decision 010's local-stdio non-goal on *hosted* MCP still holds) was descoped to an optional add-on ([issue #35](https://github.com/xy9iao/ai-stock-analyst/issues/35)).
 
 ## 1. Purpose
 

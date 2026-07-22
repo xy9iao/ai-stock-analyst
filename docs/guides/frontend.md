@@ -23,7 +23,7 @@ Two gotchas for page tests: wrap the render in `TooltipProvider` (pages with `In
 
 ## Structure
 
-- `app/` — App Router pages: `/` (dashboard), `/holdings`, `/watchlist`, `/reports` (pipeline reports + the Phase 13 Research query box — free-text question → agent memo, plain loading state, no streaming), `/chat`, `/stocks/[ticker]`. `layout.tsx` mounts the shared `TopNav`, `Footer`, the tooltip provider, and the toast `Toaster`.
+- `app/` — App Router pages: `/` (minimal home — a real dashboard waits for user accounts, issue #14), `/holdings`, `/watchlist`, `/reports` (pipeline reports with clickable citations + the Research query box — free-text question → agent memo, plain loading state, no streaming), `/chat`, `/stocks/[ticker]`. `layout.tsx` mounts the shared `TopNav`, `Footer`, the tooltip provider, and the toast `Toaster`.
 - `components/`
   - `ui/` — the design-system primitives (below).
   - `layout/` — `TopNav`, `Footer`.

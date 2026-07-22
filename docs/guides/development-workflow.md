@@ -4,7 +4,7 @@ This document explains the professional workflow for AI Stock Analyst in beginne
 
 ## Current Status
 
-**v0 (MVP) is complete and feature-frozen.** Check [`docs/roadmap.md`](../roadmap.md) for the active phase before writing code.
+**v0 (MVP) and v1 (Agent Layer, Phases 13–15) are both complete (v1 done 2026-07-21).** The project is in **demand-gated maintenance** — a new feature requires the same need recurring 3+ times in real use. Check [`docs/roadmap.md`](../roadmap.md) for status and the binding maintenance gate (the `eval/` regression set runs before any prompt/model/retrieval change).
 
 ## The Two Development Loops
 

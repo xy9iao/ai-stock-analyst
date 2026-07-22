@@ -1,4 +1,6 @@
 > **v0 Outcome (2026-07-02).** Built as designed — modular monolith, backend owns all external access, router→service→repository layering. **One deviation:** SQLAlchemy models are centralized in `backend/app/models/` (one file per table), *not* per-module as sketched below. Read this document for intent; the guides in `docs/guides/` describe the code as it exists.
+>
+> **v1 shipped (2026-07-21).** The monolith gained three LLM paths behind the same `llm_client` gateway — pipeline reports, a hand-written research agent, and chat — plus a RAG subsystem (`modules/ai/rag/`: ingestion → pgvector + FTS retrieval → cited generation) and chat compression. No architectural change: still one process, still router→service→repository. Current paths are in `docs/guides/backend.md` and the README diagram.
 
 ## 1. Purpose
 

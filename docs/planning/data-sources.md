@@ -1,6 +1,8 @@
 > **v0 Outcome (2026-07-02).** yfinance served all of v0 behind the three provider Protocols (market / news / financials) — the §13–14 provider bake-off (FMP vs Finnhub) never happened; the abstraction made it unnecessary. Caching landed as cache-aside in Postgres (quotes ~2 min, news ~15 min, financials ~1 day). News context shipped headline-level, no URLs in prompts, per §8.
 >
 > **v1 planned (2026-07-03):** Phase 14 supersedes §8's "no citations" stance — reports gain source-backed citations via hybrid RAG (pgvector + FTS→BM25, RRF); ingestion reuses the existing fetch layer. Scope in `docs/roadmap.md`; on conflict, the roadmap wins.
+>
+> **v1 shipped (2026-07-21).** Delivered: news bodies ingested via `trafilatura` (reusing the fetch layer) → chunked → OpenAI `text-embedding-3-small` → pgvector; retrieval is hybrid (pgvector cosine + Postgres FTS rescored with `rank_bm25`, RRF-fused); reports now carry clickable source citations. Corpus is seeded per-ticker via `POST /api/admin/ingest` (see `docs/guides/deployment.md` Step 6).
 
 ## 1. Purpose
 
