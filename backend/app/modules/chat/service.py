@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.errors import AppError
 from app.modules.ai import llm_client
+from app.modules.chat import compression
 from app.modules.chat import context as chat_context
 from app.modules.chat import repository
 from app.modules.chat.schemas import ChatMessageRequest
@@ -52,13 +53,28 @@ def send_message(db: Session, request: ChatMessageRequest, demo_session_id: str)
     else:
         session = repository.create_session(db, request.message[:60], demo_session_id)
 
-    # system + (optional) context + prior history + the new user message
+    # Ordering (Phase 15, cache-preserving): static system -> (optional) context ->
+    # running summary -> verbatim history -> the new user message.
     messages: list[dict[str, str]] = [{"role": "system", "content": _SYSTEM_PROMPT}]
     context_block = chat_context.build_context(db, request.context, demo_session_id)
     if context_block:
         messages.append({"role": "system", "content": "Context:\n" + context_block})
-    for past in repository.list_messages(db, session.id)[-_HISTORY_LIMIT:]:
-        messages.append({"role": past.role, "content": past.content})
+
+    rows = repository.list_messages_after(db, session.id, session.summarized_through_message_id)
+    history = [{"role": past.role, "content": past.content} for past in rows]
+    summary = session.summary
+    if compression.needs_compression(history):
+        try:
+            summary, history = compression.compress(db, demo_session_id, summary, history)
+            evicted_count = len(rows) - len(history)
+            if evicted_count > 0:  # compress no-ops when history fits the window
+                repository.set_summary(db, session, summary, rows[evicted_count - 1].id)
+        except AppError:
+            # Compression is an optimization: degrade to the v0 cap, never block chat.
+            history = history[-_HISTORY_LIMIT:]
+    if summary:
+        messages.append({"role": "system", "content": "Conversation so far (summary):\n" + summary})
+    messages.extend(history)
     messages.append({"role": "user", "content": request.message})
 
     reply = llm_client.chat(messages, db=db, session_id=demo_session_id, kind="chat")

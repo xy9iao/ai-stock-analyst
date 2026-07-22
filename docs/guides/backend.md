@@ -199,10 +199,12 @@ agent-path prompt tokens cache-served, measured 2026-07-17).
 **Regression gate:** `backend/eval/` holds 20 labeled research cases scored by
 deterministic key-fact coverage (`uv run python -m eval.run`; `--record` moves the
 baseline) plus 5 citation cases (`--citations`: the cited chunk must contain the
-expected atom). Local-only, never CI. Per CLAUDE.md, any change to prompts, models,
-or retrieval parameters runs it before merge; a score below baseline − tolerance
-blocks. Imperfect-case memos land in `eval/.last_failures.md` (gitignored) for
-diagnosis; `uv run python -m eval.corpus <term>` inspects the ingested corpus.
+expected atom) and 3 poisoned-chunk injection cases (`--poisoned`: a planted
+attack chunk's canary must not appear in the memo). Local-only, never CI. Per
+CLAUDE.md, any change to prompts, models, or retrieval parameters runs it before
+merge; a score below baseline − tolerance blocks. Imperfect-case memos land in
+`eval/.last_failures.md` (gitignored) for diagnosis; `uv run python -m eval.corpus
+<term>` inspects the ingested corpus.
 
 ## Hybrid RAG + Cited Reports (Phase 14)
 
@@ -228,6 +230,24 @@ fixed retrieval step (single-stock reports) and the agent's `search_documents` t
   survive export); validation is deterministic set-membership (pipeline: retrieved
   set + one corrective retry; agent: DB existence — weaker, known limit); invalid
   tags are stripped with a visible note, `[unverified]` renders as a badge.
+- **Injection defense** (`sanitize.py`, Phase 15) — chunk content is `demarcate()`d
+  (wrapped in untrusted-content markers, structurally sanitized) at prompt-assembly
+  time in both consumers; both system prompts carry a "data, never instructions"
+  policy. Read-only tools cap the blast radius. See `docs/planning/decisions.md` #013.
+
+## Chat compression (Phase 15)
+
+`chat/compression.py` — long chats stay affordable via **batch eviction into a
+running summary**. The prompt grows append-only (prefix-cache friendly) until
+estimated history tokens cross `chat_compress_threshold_tokens`; then a compression
+event folds all-but-the-last-`chat_verbatim_messages` turns into one flash-tier
+summary (`kind='summarize'`). The summary and an eviction cursor
+(`chat_sessions.summarized_through_message_id`) persist, so no turn is ever
+re-summarized. Prompt order is strict — system → summary → verbatim window → user
+turn — so compression events, not every message, invalidate the cache. Summarize
+failure degrades to the v0 message cap; the DB keeps every message regardless
+(compression decides what the prompt sees, never what is stored). Sizing rule:
+threshold ≈ 2× the verbatim window's token budget.
 
 ## Testing
 

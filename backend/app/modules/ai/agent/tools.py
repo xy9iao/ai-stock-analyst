@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 
 from app.modules.ai import llm_client
 from app.modules.ai.rag import retrieval
+from app.modules.ai.rag.sanitize import demarcate
 from app.modules.financials import service as financials_service
 from app.modules.market_data import service as market_service
 from app.modules.market_data.schemas import HistoryRange
@@ -186,7 +187,7 @@ def search_documents(db: Session, session_id: str, query: str, ticker: str = "")
         date = str(chunk.published_at)[:10] if chunk.published_at else "n.d."
         lines.append(
             f"[chunk:{chunk.id}] {chunk.title} ({date}) {chunk.source_url}\n"
-            f"{chunk.content[:_MAX_PASSAGE_CHARS]}"
+            f"{demarcate(chunk.content[:_MAX_PASSAGE_CHARS])}"
         )
     return "\n\n".join(lines)
 

@@ -5,7 +5,7 @@ Single source of truth for project progress and the active phase's scope. Check 
 ## Current Status
 
 - **v0 shipped and frozen** — all 12 phases done, released as `v0.1.0`, live at https://ai-stock-analyst-pi.vercel.app. Bug fixes only.
-- **Active version: v1 — Agent Layer (Phases 13–15), planned below.** **Phase 13 done (2026-07-20); Phase 14 done (2026-07-21)** (ran ahead of Phase 13.5 by owner-confirmed reorder). **Phase 15 active** (owner-confirmed reorder); **Phase 13.5 (MCP wrapper) lands 2026-07-28** with the new MCP release, then v1 close-out.
+- **v1 — Agent Layer (Phases 13–15) — COMPLETE (2026-07-21).** **v1 complete (2026-07-21).** Phases 13, 14, 15 shipped (2026-07-20 → 07-21); the project is now in **demand-gated maintenance**. **Phase 13.5 (local MCP wrapper) is descoped from v1 to a post-v1 add-on** (owner decision 2026-07-21) — build it as an optional integration if/when it's wanted, not a release blocker. v1 measured: 79% agent-path prompt-cache hit; ~20% net long-chat compression saving; regression gate at 0.983 + citation + poisoned-chunk cases.
 - Anything not listed in the v1 plan is **out of scope by default**; deferred ideas stay as GitHub issues.
 
 ## v1 — Agent Layer, MCP, RAG, Context & Injection Defense (Phases 13–15)
@@ -23,9 +23,9 @@ Single source of truth for project progress and the active phase's scope. Check 
 | Phase | Content | Est. | Status |
 |-------|---------|------|--------|
 | 13 | Tool layer → hand-written agent loop (Research Agent) → regression set | ~1 week | done (2026-07-20) |
-| 13.5 | FastMCP local wrapper (stdio only) | 1 day | deferred to 2026-07-28 (owner call: build on the MCP release landing that week) |
+| 13.5 | FastMCP local wrapper (stdio only) | 1 day | **post-v1 add-on** (descoped from v1 2026-07-21; optional, unscheduled) |
 | 14 | RAG: ingestion → hybrid retrieval (pgvector + FTS→BM25, RRF) → cited reports | ~4 days | done (2026-07-21) |
-| 15 | Long-chat compression + indirect-injection defense | 2–3 days | in progress ← active (owner-confirmed reorder ahead of deferred 13.5) |
+| 15 | Long-chat compression + indirect-injection defense | 2–3 days | done (2026-07-21) |
 
 Sequencing rationale: 13 before 14 because `search_news` becomes the retrieval entry point and the regression set must exist before RAG changes report behavior; 15 last because sanitization sits on top of the Phase 14 retrieval path.
 
@@ -65,7 +65,9 @@ Anything worth archiving goes to Reports (pipeline = routine checkup, research =
 
 **Demand-gated futures (recorded, NOT built — gate: same pain 3+ times in real use):** "Discuss this memo" button (opens chat with `include_recent_reports` pre-toggled) · unified input box with a Chat/Research mode switch · thesis patrol ("did this week's news shake my NVDA thesis?", using the dormant `investment_thesis` field).
 
-### Phase 13.5 — MCP Wrapper (local stdio only)
+### Phase 13.5 — MCP Wrapper (local stdio only) — POST-V1 ADD-ON (descoped 2026-07-21)
+
+*Not part of shipped v1. Kept here as the spec for an optional future integration; build only on demand.*
 
 Wrap the Phase 13.1 tool functions with **FastMCP**, local stdio transport — thin glue importing the same functions, zero duplicated logic. **Never deployed as a public/hosted MCP server** (it would bypass session caps and the master switch) — document the constraint in the deployment guide. Deliverable: `mcp_server.py` + a README registration snippet. **Acceptance:** a natural-language stock question from Claude Code invokes the local tools and returns real data.
 

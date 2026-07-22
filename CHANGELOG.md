@@ -2,6 +2,18 @@
 
 Build history by phase — the **accurate, frozen record** of what was actually built, newest first. The active phase lives in `docs/roadmap.md`. Per the Phase close-out rules in `CLAUDE.md`, append a new section here when a phase is finished; the active phase keeps a dated work log at the top until then.
 
+> **v1 — Agent Layer complete (2026-07-21).** Phases 13–15 shipped: hand-written research agent, hybrid RAG with cited reports, long-chat compression, and indirect-injection defense — behind the single `llm_client` gateway. Measured: 79% agent-path prompt-cache hit, ~20% net compression saving, regression gate at 0.983 + citation + poisoned-chunk cases. Phase 13.5 (local MCP wrapper) was descoped to an optional post-v1 add-on. The project is now in **demand-gated maintenance**.
+
+## Phase 15 — Compression + Injection Defense (done 2026-07-21)
+
+The last v1 feature phase. Long chats stay affordable via compression; RAG-fed reports resist poisoned public content. Built 2026-07-21 in PR #34.
+
+- **Chat compression** (`chat/compression.py`) — batch eviction into a running summary: the prompt grows append-only until estimated tokens cross a threshold, then all-but-the-last-N turns fold into one flash-tier summary (`kind='summarize'`). Cache-preserving order (system → summary → verbatim window → user turn); summary + an eviction cursor persist on `chat_sessions`; summarize failure degrades to the v0 cap. **Measured twice:** the first cut had no eviction cursor → re-summarized already-folded turns → net savings *negative*; after the cursor fix + window/threshold recalibration, prompts drop **44–70%** per compression event and **~20% net** over a 12-message conversation, summary quality verified (recalled exact figures from summary-only memory). The bug was invisible to unit tests (single-call mocks) — only a live multi-event run exposed it.
+- **Injection defense** (`ai/rag/sanitize.py`, OWASP LLM01) — three layers on the shared retrieval path: untrusted-content demarcation + deterministic structural sanitization (marker forgeries, line-start role tags, `[INST]` markers — no phrase blacklist) + read-only tools capping blast radius to report bias. "Data, never instructions" policy in both system prompts. Verified by 3 poisoned-chunk canary cases (`eval/run.py --poisoned`): direct steering, demarcation escape, citation laundering — 3/3 neither followed nor cited.
+- **Verification** — regression 0.967 ≥ 0.933 floor (baseline re-recorded to 0.983 post-Phase-14), citations 5/5 (one confirming re-run on a non-deterministic tag-placement flake), poisoned 3/3.
+- **Files** — added `chat/compression.py`, `ai/rag/sanitize.py`, `eval/poisoned_cases.json`, migrations `8b3d21a7ca92` + `264145147e86`, 3 test files; modified chat service/repository/models, both system prompts, `citations`/`tools` (demarcation), `eval/run.py` (`--poisoned`), config, `decisions.md` (012, 013). Suite: 163 backend + 28 frontend.
+- **Key decisions** — Decision 012 (hybrid retrieval on Postgres, no dedicated vector DB) and Decision 013 (injection defense depth ∝ blast radius; no LLM classifier).
+
 **v0 at a glance (June – July 2026):** Phases 0–11 delivered a local-first AI stock research assistant — holdings/watchlist CRUD → market data (provider abstraction + cache) → news/financials → AI reports (single LLM gateway, compact context injection) → multi-turn chat → Markdown export → UI polish/design system → test suites (43 backend + 28 frontend) → the public README. Plus off-roadmap: one-command Docker dev, the frontend MVP UI, ESLint/CI hardening. v0 was declared **feature-frozen on 2026-07-02**; Phase 12 (deploy-prep) remains.
 
 ## Phase 14 — Hybrid RAG + Cited Reports (done 2026-07-21)
