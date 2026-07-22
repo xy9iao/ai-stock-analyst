@@ -55,6 +55,10 @@ More depth in the guides: [Backend](docs/guides/backend.md) · [API](docs/guides
 
 ## Screenshots
 
+| Research agent | Cited report |
+| --- | --- |
+| ![Research agent — free-text question answered by the tool-use loop, filed as an archived memo](docs/images/research-agent.png) | ![Cited report — claims carry clickable citations backed by a Sources section](docs/images/cited-report.png) |
+
 | Holdings | Stock detail |
 | --- | --- |
 | ![Holdings — portfolio table with live prices and gain/loss](docs/images/holdings.png) | ![Stock detail — price chart with range switching](docs/images/stock-detail.png) |
