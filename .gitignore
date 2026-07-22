@@ -38,11 +38,5 @@ frontend/coverage/
 # Local interview prep (never publish)
 interview-defense.md
 
-
-# Local teaching/learning process (never publish)
-teaching-protocol.md
-backend/eval/.last_failures.md
-
-# Codex-generated mirror of .claude/ — local only, never commit (teaching process stays out of the repo).
-# AGENTS.md is intentionally tracked: it's a committed pointer to CLAUDE.md (the single rule source).
+# Codex config
 .agents/
