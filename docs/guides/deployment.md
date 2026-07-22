@@ -34,6 +34,7 @@ In the [DeepSeek platform](https://platform.deepseek.com), top up only a small a
 4. Environment variables:
    - `DATABASE_URL` — the Neon URL from Step 1
    - `LLM_BASE_URL=https://api.deepseek.com`, `LLM_API_KEY=...`, `LLM_MODEL=deepseek-v4-flash`
+   - `EMBEDDING_API_KEY=...` — OpenAI key for RAG ingestion/retrieval; without it citations never populate (see Step 6)
    - `DEMO_MODE=true`
    - `ADMIN_TOKEN=...` — generate one: `openssl rand -hex 24`
    - `BACKEND_CORS_ORIGINS=https://<your-app>.vercel.app` (CORS is mostly moot behind the same-origin proxy, but keep it tight anyway)
@@ -71,6 +72,23 @@ curl -X POST https://<render-url>/api/admin/llm \
   -d '{"enabled": true, "ttl_minutes": 60}'
 # status: GET the same URL with the token; off: {"enabled": false}
 ```
+
+## Step 6 — Seeding the RAG corpus (required for citations)
+
+A fresh deployment has an **empty `document_chunks` table**, so research memos fall
+back to un-citable news headlines and pipeline reports show no Sources. Populate the
+corpus per ticker with the admin-gated ingestion endpoint (spends OpenAI embedding
+tokens, so `EMBEDDING_API_KEY` must be set on the server):
+
+```bash
+curl -X POST https://<render-url>/api/admin/ingest \
+  -H "X-Admin-Token: $ADMIN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"ticker": "NVDA"}'
+# -> {"ticker":"NVDA","docs_ingested":9,"docs_skipped":1,"chunks_written":23}
+```
+
+Re-run per ticker you want cited, and re-run periodically to refresh (ingestion is
+idempotent per source URL). Requires `EMBEDDING_API_KEY` in the Render environment.
 
 ## CI/CD
 

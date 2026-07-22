@@ -16,7 +16,15 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.core.errors import AppError
 from app.models import LlmCall
-from app.modules.admin.schemas import KindStats, LlmSwitchRead, LlmSwitchRequest, StatsRead
+from app.modules.admin.schemas import (
+    IngestRead,
+    IngestRequest,
+    KindStats,
+    LlmSwitchRead,
+    LlmSwitchRequest,
+    StatsRead,
+)
+from app.modules.ai.rag import ingest
 
 router = APIRouter(prefix="/api", tags=["admin"])
 
@@ -24,6 +32,26 @@ router = APIRouter(prefix="/api", tags=["admin"])
 def _require_admin(x_admin_token: str | None) -> None:
     if not settings.admin_token or x_admin_token != settings.admin_token:
         raise AppError(code="admin_forbidden", message="Invalid admin token", status_code=403)
+
+
+@router.post("/admin/ingest")
+def ingest_documents(
+    request: IngestRequest,
+    db: Session = Depends(get_db),
+    x_admin_token: str | None = Header(default=None),
+) -> IngestRead:
+    """Populate the RAG corpus for a ticker (admin-only — spends embedding
+    tokens and writes the shared, read-only document_chunks table). Without
+    this, a fresh deployment has an empty corpus and research memos cite no
+    sources. Requires EMBEDDING_API_KEY on the server."""
+    _require_admin(x_admin_token)
+    stats = ingest.ingest_ticker(db, request.ticker)
+    return IngestRead(
+        ticker=stats.ticker,
+        docs_ingested=stats.docs_ingested,
+        docs_skipped=stats.docs_skipped,
+        chunks_written=stats.chunks_written,
+    )
 
 
 @router.post("/admin/llm")

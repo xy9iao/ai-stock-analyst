@@ -5,6 +5,17 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class IngestRequest(BaseModel):
+    ticker: str
+
+
+class IngestRead(BaseModel):
+    ticker: str
+    docs_ingested: int
+    docs_skipped: int
+    chunks_written: int
+
+
 class LlmSwitchRequest(BaseModel):
     enabled: bool
     ttl_minutes: int | None = None  # defaults to settings.llm_switch_ttl_minutes

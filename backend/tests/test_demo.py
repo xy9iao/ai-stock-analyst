@@ -156,3 +156,30 @@ def test_session_reset_clears_cookie(client: TestClient) -> None:
     res = client.post("/api/session/reset")
     assert res.status_code == 204
     assert 'session_id=""' in res.headers.get("set-cookie", "")
+
+
+def test_admin_ingest_requires_token_and_runs(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.modules.ai.rag import ingest
+
+    monkeypatch.setattr(settings, "admin_token", "secret")
+    monkeypatch.setattr(
+        ingest,
+        "ingest_ticker",
+        lambda db, ticker, **kw: ingest.IngestStats(ticker.upper(), 3, 1, 12),
+    )
+
+    # no / wrong token -> 403 (no ingestion runs)
+    assert client.post("/api/admin/ingest", json={"ticker": "NVDA"}).status_code == 403
+
+    ok = client.post(
+        "/api/admin/ingest", json={"ticker": "nvda"}, headers={"X-Admin-Token": "secret"}
+    )
+    assert ok.status_code == 200
+    assert ok.json() == {
+        "ticker": "NVDA",
+        "docs_ingested": 3,
+        "docs_skipped": 1,
+        "chunks_written": 12,
+    }
