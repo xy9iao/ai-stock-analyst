@@ -19,6 +19,8 @@
 > - **Still open (next-version questions):** Q6 (transcripts), Q19 (accounts), Q20 (onboarding), Q21 (modes), Q22 (bilingual), Q25/Q26 (deployment & key management — Phase 12 territory).
 >
 > **v1 planning (2026-07-03):** Q16 (RAG) → resolved for v1: hybrid retrieval (pgvector + FTS→BM25, RRF) with cited reports, roadmap Phase 14. Q17 (agents) → resolved for v1: hand-written tool-use loop + pipeline-vs-agent experiment + request-type router, roadmap Phase 13 (see Decision 010). Q25/Q26 → resolved by Phase 12 (Vercel+Render+Neon; platform env vars).
+>
+> **v1 shipped (2026-07-21).** Q16 → hybrid RAG + cited reports live (Decision 012). Q17 → agent loop shipped, but the **pipeline-vs-agent experiment was dropped**: routing became a design decision by request type (Decision 011), not a measured comparison. MCP descoped to a post-v1 add-on ([issue #35](https://github.com/xy9iao/ai-stock-analyst/issues/35)). Still open: Q6/Q19/Q20/Q21/Q22 (accounts, onboarding, modes, bilingual) — gated by the demand rule.
 
 ## 1. Purpose
 

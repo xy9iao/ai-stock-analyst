@@ -13,7 +13,7 @@ another session's rows behave as `404`. LLM endpoints add two protections: a **m
 
 ## Conventions
 
-- **Resource per module**, one router each (`health`, `holdings`, `watchlist`).
+- **Resource per module**, one router each (`health`, `holdings`, `watchlist`, `market_data`, `news`, `financials`, `ai`/reports, `chat`, `session`, `admin`).
 - **Partial updates use `PATCH`** (not `PUT`) — the body contains only the fields to change.
 - **Status codes:** `200` read/update, `201` create, `204` delete, `404` not found, `422` validation error.
 - **Tickers** are normalized server-side: trimmed and uppercased before storage.
@@ -148,7 +148,7 @@ missing key → `503`; LLM error → `502`. `research` runs the Phase 13 agent l
 archives the memo like any other report (title = truncated query); demo mode counts it against
 the same per-session report cap (`429` when exhausted).
 
-**ReportRead** — `id`, `report_type`, `title`, `content_markdown`, `created_at`.
+**ReportRead** — `id`, `report_type`, `title`, `content_markdown`, `created_at`. When the RAG corpus has matching documents, `content_markdown` carries clickable `[[n]](url)` citations + a `## Sources` section (hybrid retrieval; empty corpus → uncited report). See [backend.md](backend.md) → Hybrid RAG.
 
 ## Chat
 
@@ -164,7 +164,8 @@ injection is **toggleable per message**.
 
 `POST` body: `{ "message": str, "session_id"?: int, "context"?: { "include_holdings"?: bool,
 "include_watchlist"?: bool, "ticker"?: str, "include_recent_reports"?: bool } }` — omit
-`session_id` to start a new conversation. Returns `{ session_id, reply }`.
+`session_id` to start a new conversation. Returns `{ session_id, reply }`. Long conversations
+compress transparently (sliding window + running summary; see [backend.md](backend.md) → Chat compression).
 
 ## Session (demo)
 
@@ -181,4 +182,5 @@ The admin endpoints require the `X-Admin-Token` header matching `ADMIN_TOKEN` (u
 |--------|------|---------|------------------|
 | POST | `/api/admin/llm` | set the LLM master switch (`{ enabled, ttl_minutes? }`; on always expires after the TTL, default 60 min) | `200` / `403` |
 | GET | `/api/admin/llm` | current switch state | `200` / `403` |
-| GET | `/api/stats` | LLM usage aggregates (calls, prompt/completion/cached tokens, avg latency, by kind) from `llm_calls` | `200` |
+| POST | `/api/admin/ingest` | seed the RAG corpus for a ticker (`{ ticker }` → `{docs_ingested, docs_skipped, chunks_written}`); spends embedding tokens, so `EMBEDDING_API_KEY` must be set | `200` / `403` |
+| GET | `/api/stats` | LLM usage aggregates (calls, prompt/completion/cached tokens, avg latency, by kind — incl. `embed`/`summarize`) from `llm_calls` | `200` |

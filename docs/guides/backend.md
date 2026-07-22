@@ -251,7 +251,7 @@ threshold ≈ 2× the verbatim window's token budget.
 
 ## Testing
 
-`backend/tests/` holds the pytest suite (145 tests): `conftest.py` provides a `client` fixture backed by in-memory SQLite via a `get_db` override; market/news/financials providers and the LLM are monkeypatched at their factory/call seams, so tests run with **no network and no API cost**. `uv run pytest` also reports coverage (`pytest-cov`, measured — not gated).
+`backend/tests/` holds the pytest suite (164 tests): `conftest.py` provides a `client` fixture backed by in-memory SQLite via a `get_db` override; market/news/financials providers and the LLM are monkeypatched at their factory/call seams, so tests run with **no network and no API cost**. `uv run pytest` also reports coverage (`pytest-cov`, measured — not gated).
 
 ## Health Endpoint
 
