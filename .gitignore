@@ -43,6 +43,6 @@ interview-defense.md
 teaching-protocol.md
 backend/eval/.last_failures.md
 
-# Codex-generated mirrors of CLAUDE.md/.claude — local only, never commit (teaching process stays out of the repo)
+# Codex-generated mirror of .claude/ — local only, never commit (teaching process stays out of the repo).
+# AGENTS.md is intentionally tracked: it's a committed pointer to CLAUDE.md (the single rule source).
 .agents/
-AGENTS.md
